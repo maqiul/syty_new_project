@@ -1,0 +1,324 @@
+<Window x:Class="SytyPrintClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        xmlns:local="clr-namespace:SytyPrintClient"
+        xmlns:converters="clr-namespace:SytyPrintClient.Converters"
+        mc:Ignorable="d"
+        Title="穿线助手"
+        Height="650" Width="950"
+        MinHeight="450" MinWidth="700"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Closing="OnClosing">
+
+    <Window.Resources>
+        <system:UInt32 x:Key="BlurGradientValue">0x99FFFFFF</system:UInt32>
+        <converters:LogLevelToColorConverter x:Key="LogLevelToColorConverter"/>
+    </Window.Resources>
+
+    <!-- 外层圆角边框（透明背景 + 圆角裁剪） -->
+    <Border CornerRadius="10" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+        <!-- 内层圆角边框（亮色背景主体） -->
+        <Border CornerRadius="10" Background="#f5f7fa" BorderBrush="#d0d0d0" BorderThickness="1">
+            <hc:DialogContainer>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <!-- 自定义标题栏 -->
+                        <RowDefinition Height="42"/>
+                        <!-- 主内容区 -->
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- ========== 自定义标题栏 ========== -->
+                    <Border x:Name="TitleBar" Grid.Row="0" Background="White">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 左侧：标题 -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="🔌" FontSize="15" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="穿线助手" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="#333333" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- 中间：店铺名称 -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <!-- 店铺名称 -->
+                                <TextBlock x:Name="TxtShopName" Text="🏪 未绑定店铺" FontSize="12"
+                                           Foreground="#888" VerticalAlignment="Center"/>
+                                <!-- 店铺ID（小号灰色） -->
+                                <TextBlock x:Name="TxtShopId" Text="" FontSize="10"
+                                           Foreground="#bbb" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                            </StackPanel>
+
+                            <!-- 右侧：状态 + 设置 + 断开连接 + 最小化 + 关闭 -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+
+                                <!-- 连接状态指示 -->
+                                <Ellipse x:Name="ConnectionStatusDot" Width="10" Height="10" Fill="#ccc"
+                                         Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtConnectionStatus" Text="未连接" FontSize="11" Foreground="#888"
+                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+
+                                <!-- ⚙️ 设置按钮 -->
+                                <Border x:Name="BtnSettings" Width="40" Height="28" CornerRadius="6"
+                                        Background="Transparent" Cursor="Hand"
+                                        MouseLeftButtonDown="BtnSettings_Click" ToolTip="连接配置">
+                                    <TextBlock Text="⚙️" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <!-- 连接/停止 切换按钮 -->
+                                <Button x:Name="BtnToggleConnection" Content="▶ 连接" Width="72" Height="28"
+                                        Margin="0,0,6,0" FontSize="11" FontWeight="SemiBold"
+                                        Padding="4,0" Cursor="Hand"
+                                        Click="BtnToggleConnection_Click">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="#52c41a"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#3fad09"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- 分隔线 -->
+                                <Rectangle Width="1" Height="18" Fill="#ddd" Margin="2,0,4,0"/>
+
+                                <!-- 最小化按钮 -->
+                                <Border x:Name="BtnMinimize" Width="36" Height="28" CornerRadius="4"
+                                        Background="Transparent" Cursor="Hand"
+                                        MouseLeftButtonDown="BtnMinimize_Click">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#e0e0e0"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Path Data="M2,6 L10,6" Stroke="#555" StrokeThickness="1.2"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <!-- 关闭按钮 -->
+                                <Border x:Name="BtnClose" Width="36" Height="28" CornerRadius="4"
+                                        Background="Transparent" Cursor="Hand"
+                                        MouseLeftButtonDown="BtnClose_Click" Margin="2,0,0,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#e81123"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Path Data="M2,2 L10,10 M10,2 L2,10" Stroke="#555" StrokeThickness="1.2"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- ========== 主内容区 ========== -->
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <!-- 主内容区（Tabs） -->
+                            <RowDefinition Height="*"/>
+                            <!-- 底部操作栏 -->
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 主内容区 (Tabs) - 始终显示 -->
+                        <Border x:Name="MainContentBorder" Grid.Row="0" Margin="16,8,16,8"
+                                Background="White" CornerRadius="8"
+                                BorderBrush="#e0e0e0" BorderThickness="1">
+                            <TabControl Style="{StaticResource TabControlCapsuleSolid}" FontSize="13">
+
+                                <!-- Tab1: 运行日志 -->
+                                <TabItem Header="📋 运行日志">
+                                    <Grid Margin="8">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- 日志 ListBox：圆角边框 -->
+                                        <Border BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="6"
+                                                Background="White">
+                                            <ListBox x:Name="LogListBox"
+                                                     BorderThickness="0" Background="Transparent"
+                                                     VirtualizingPanel.IsVirtualizing="True"
+                                                     VirtualizingPanel.VirtualizationMode="Recycling">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal" Margin="4,3">
+                                                            <TextBlock Text="{Binding Time}" Foreground="#999" FontSize="11" Margin="0,0,8,0"/>
+                                                            <TextBlock Text="[" FontSize="11" Foreground="#bbb"/>
+                                                            <TextBlock Text="{Binding Level}"
+                                                                       Foreground="{Binding Level, Converter={StaticResource LogLevelToColorConverter}}"
+                                                                       FontSize="11" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="] " FontSize="11" Foreground="#bbb" Margin="0,0,4,0"/>
+                                                            <TextBlock Text="{Binding Message}" Foreground="#333" FontSize="11" TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                                <ListBox.ItemContainerStyle>
+                                                    <Style TargetType="ListBoxItem">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                        <Setter Property="Padding" Value="0"/>
+                                                    </Style>
+                                                </ListBox.ItemContainerStyle>
+                                            </ListBox>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+
+                                <!-- Tab2: 打印预览 -->
+                                <TabItem Header="🖨️ 打印预览">
+                                    <Grid Margin="8">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- WebView2 容器 -->
+                                        <Border Grid.Row="0" BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="6"
+                                                Background="White" Margin="0,0,0,8">
+                                            <Grid x:Name="WebViewContainer"/>
+                                        </Border>
+
+                                        <!-- 底部操作按钮 -->
+                                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                                            <Button Content="📋 示例模板" Width="100" Height="32" Margin="0,0,8,0"
+                                                    FontSize="12" Foreground="#666" Background="White"
+                                                    BorderBrush="#d0d0d0" BorderThickness="1" Cursor="Hand"
+                                                    Click="BtnTemplatePreview_Click">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border x:Name="bg" Background="{TemplateBinding Background}"
+                                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            CornerRadius="4">
+                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="bg" Property="Background" Value="#f0f0f0"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                            <Button Content="🔄 刷新预览" Width="100" Height="32"
+                                                    FontSize="12" Foreground="White" Background="#0078d4"
+                                                    BorderThickness="0" Cursor="Hand"
+                                                    Click="BtnRefreshPreview_Click">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="4">
+                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="bg" Property="Background" Value="#005a9e"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+                        </Border>
+
+                        <!-- 底部操作栏 -->
+                        <Border Grid.Row="1" Background="White" BorderBrush="#e0e0e0" BorderThickness="0,1,0,0" Padding="16,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 左侧：状态文字 -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse x:Name="BottomStatusDot" Width="8" Height="8" Fill="#ccc" Margin="0,0,6,0"/>
+                                    <TextBlock x:Name="StatusBarText" Text="准备就绪" FontSize="11" Foreground="#888" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- 右侧：时间 + 清屏按钮 -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock x:Name="StatusBarTime" Text="" FontSize="11" Foreground="#999" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                    <Button Content="🗑️ 清屏" Width="60" Height="26" FontSize="11"
+                                            Foreground="#999" Background="Transparent" BorderThickness="0"
+                                            Cursor="Hand" Click="BtnClearLog_Click">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="bg" Background="Transparent" CornerRadius="4">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="bg" Property="Background" Value="#f0f0f0"/>
+                                                                    <Setter Property="Foreground" Value="#666"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </hc:DialogContainer>
+        </Border>
+    </Border>
+</Window>

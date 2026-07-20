@@ -1,0 +1,33 @@
+{
+  "pages": [
+    {
+      "path": "pages/register/index",
+      "style": {
+        "navigationBarTitleText": "自助穿线登记",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "穿线进度查询",
+        "navigationStyle": "custom"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "SY穿线",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F5F7FA",
+    "app-plus": {
+      "background": "#efeff4"
+    }
+  },
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^up-(.*)": "uview-plus/components/u-$1/u-$1.vue"
+    }
+  }
+}

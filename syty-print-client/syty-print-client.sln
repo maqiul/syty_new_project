@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11723.231 stable
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "syty-print-client", "syty-print-client.csproj", "{20A58DC5-E131-A287-BC04-469B15484F41}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{20A58DC5-E131-A287-BC04-469B15484F41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20A58DC5-E131-A287-BC04-469B15484F41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20A58DC5-E131-A287-BC04-469B15484F41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20A58DC5-E131-A287-BC04-469B15484F41}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {151281D2-9C2F-40B4-9821-7E47F3AB1000}
+	EndGlobalSection
+EndGlobal
