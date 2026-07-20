@@ -20,12 +20,13 @@ package com.syty.service;
  *   <li><b>DDL 执行</b>: 通过 ScriptRunner 逐条执行 DDL，自动提交</li>
  *   <li><b>回滚策略</b>: DDL 不可事务回滚，采用补偿性回滚 (DROP SCHEMA CASCADE)</li>
  *   <li><b>安全</b>: 租户编码白名单校验 + 参数化查询，防止 SQL 注入</li>
+ *   <li><b>状态追踪</b>: tenant 表 init_status 字段记录初始化状态 (V2.0)</li>
  * </ul>
  * 
  * <h3>单点故障</h3>
  * <ul>
  *   <li>执行期间平台宕机 → Schema 可能残留，需手动 {@link #cleanupTenant(String)}</li>
- *   <li>建议在 tenant 表增加 init_status 字段做状态标记 (TODO: V2.0)</li>
+ *   <li>init_status 字段标记失败状态，便于排查和重试</li>
  * </ul>
  * 
  * @author 老K (架构师)

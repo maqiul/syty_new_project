@@ -104,7 +104,13 @@ public class TenantInitServiceImpl implements TenantInitService {
         String passwordHash = BCrypt.hashpw(password);
 
         boolean schemaCreated = false;
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+
         try {
+            // === 步骤 0: 更新租户初始化状态为 INITIALIZING ===
+            log.info("  [0/4] 更新租户初始化状态为 INITIALIZING");
+            jdbc.update("UPDATE tenant SET init_status = 'INITIALIZING' WHERE code = ?", tenantCode);
+
             // === 步骤 1: 创建 Schema ===
             if (!schemaExists(tenantCode)) {
                 log.info("  [1/4] CREATE SCHEMA {}", schemaName);
@@ -128,18 +134,21 @@ public class TenantInitServiceImpl implements TenantInitService {
             insertPlatformAuthIndex(tenantCode, adminUsername, passwordHash);
 
             // === 步骤 4: 更新租户状态 ===
-            log.info("  [4/4] 更新租户状态为已启用");
-            JdbcTemplate jdbc = new JdbcTemplate(dataSource);
-            jdbc.update("UPDATE tenant SET status = 1 WHERE code = ?", tenantCode);
+            log.info("  [4/4] 更新租户状态为已启用，初始化状态为 COMPLETED");
+            jdbc.update("UPDATE tenant SET status = 1, init_status = 'COMPLETED' WHERE code = ?", tenantCode);
 
             log.info("<<< 租户 Schema 初始化完成: {} (admin={})", schemaName, adminUsername);
 
         } catch (TenantInitException e) {
-            // 已经是包装过的异常，直接上抛
+            // 已经是包装过的异常，标记失败状态后上抛
+            markInitFailed(tenantCode);
             throw e;
 
         } catch (Exception e) {
             log.error("!!! 租户初始化失败: schema={}, error={}", schemaName, e.getMessage(), e);
+
+            // 标记失败状态
+            markInitFailed(tenantCode);
 
             // 补偿回滚: 如果 Schema 已创建，尝试 DROP
             boolean rollbackOk = false;
@@ -154,6 +163,19 @@ public class TenantInitServiceImpl implements TenantInitService {
                     e,
                     rollbackOk
             );
+        }
+    }
+
+    /**
+     * 标记租户初始化失败
+     */
+    private void markInitFailed(String tenantCode) {
+        try {
+            JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+            jdbc.update("UPDATE tenant SET init_status = 'FAILED' WHERE code = ?", tenantCode);
+            log.warn("租户初始化状态已标记为 FAILED: tenantCode={}", tenantCode);
+        } catch (Exception e) {
+            log.error("标记租户初始化失败状态时出错: tenantCode={}, error={}", tenantCode, e.getMessage());
         }
     }
 

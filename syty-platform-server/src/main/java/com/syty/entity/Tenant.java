@@ -13,6 +13,8 @@ public class Tenant {
     private String contactPerson;
     private String phone;
     private Integer status;
+    /** 初始化状态: PENDING-待初始化 INITIALIZING-初始化中 COMPLETED-已完成 FAILED-失败 */
+    private String initStatus;
     private Integer enableBadmintonTournament;
     private Integer enableTennisTournament;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

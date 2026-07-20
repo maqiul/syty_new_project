@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS tenant (
     contact_person  VARCHAR(50)  DEFAULT '',
     phone           VARCHAR(20)  DEFAULT '',
     status          SMALLINT     NOT NULL DEFAULT 1,
+    init_status     VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
     expired_at      TIMESTAMP    DEFAULT NULL,
     remark          VARCHAR(500) DEFAULT '',
     deleted         SMALLINT     NOT NULL DEFAULT 0,
@@ -20,7 +21,9 @@ COMMENT ON TABLE tenant IS '租户';
 COMMENT ON COLUMN tenant.name IS '租户名称';
 COMMENT ON COLUMN tenant.code IS '租户编码(唯一)';
 COMMENT ON COLUMN tenant.status IS '状态: 1-启用 0-禁用';
+COMMENT ON COLUMN tenant.init_status IS '初始化状态: PENDING-待初始化 INITIALIZING-初始化中 COMPLETED-已完成 FAILED-失败';
 CREATE INDEX idx_tenant_code ON tenant(code);
+CREATE INDEX idx_tenant_init_status ON tenant(init_status);
 
 -- ==================== 用户 ====================
 CREATE TABLE IF NOT EXISTS sys_user (
