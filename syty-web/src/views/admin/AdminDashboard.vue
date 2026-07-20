@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="admin-dashboard">
     <el-row :gutter="20" class="stat-cards">
       <el-col :xs="12" :sm="6" v-for="item in stats" :key="item.label">
@@ -48,6 +48,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { User, OfficeBuilding, Document, Monitor, Setting } from '@element-plus/icons-vue'
+import { getPlatformDashboardStats, getPlatformRecentLogs } from '@/api'
 
 interface StatItem {
   label: string
@@ -66,7 +67,7 @@ interface LogItem {
 const stats = ref<StatItem[]>([
   { label: '租户数', value: '--', icon: OfficeBuilding, color: '#409EFF' },
   { label: '用户数', value: '--', icon: User, color: '#67C23A' },
-  { label: '订单数', value: '--', icon: Document, color: '#E6A23C' },
+  { label: '活跃租户', value: '--', icon: Document, color: '#E6A23C' },
   { label: '系统状态', value: '运行中', icon: Monitor, color: '#909399' },
 ])
 
@@ -82,9 +83,13 @@ const quickLinks = [
 
 const fetchStats = async () => {
   try {
-    // TODO: 调用后端接口获取统计数据
-    // const res = await api.getAdminDashboard()
-    // stats.value = res.data
+    const res: any = await getPlatformDashboardStats()
+    const data = res?.data?.data ?? res?.data ?? res
+    if (data) {
+      stats.value[0].value = data.tenantCount ?? 0
+      stats.value[1].value = data.userCount ?? 0
+      stats.value[2].value = data.activeTenantCount ?? 0
+    }
   } catch (e) {
     console.error('Failed to fetch admin dashboard stats', e)
   }
@@ -92,9 +97,16 @@ const fetchStats = async () => {
 
 const fetchRecentLogs = async () => {
   try {
-    // TODO: 调用后端接口获取最近操作日志
-    // const res = await api.getRecentLogs({ limit: 10 })
-    // recentLogs.value = res.data
+    const res: any = await getPlatformRecentLogs(10)
+    const data = res?.data?.data ?? res?.data ?? res
+    if (Array.isArray(data)) {
+      recentLogs.value = data.map((item: any) => ({
+        user: item.user || '系统',
+        action: item.content || '',
+        target: '',
+        time: item.time || '',
+      }))
+    }
   } catch (e) {
     console.error('Failed to fetch recent logs', e)
   }

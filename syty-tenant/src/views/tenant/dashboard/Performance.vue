@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="performance-page">
     <h2 class="page-title">穿线师绩效看板</h2>
 
@@ -114,12 +114,10 @@ async function fetchStats() {
       Object.assign(stats, data)
       renderLineChart(data.dailyOrdersTrend || [])
     } else {
-      renderLineChart(mockDailyTrend())
-      Object.assign(stats, mockStats())
+      renderLineChart([])
     }
   } catch {
-    renderLineChart(mockDailyTrend())
-    Object.assign(stats, mockStats())
+    renderLineChart([])
   } finally {
     chartLoading.value = false
   }
@@ -130,9 +128,9 @@ async function fetchRank() {
   try {
     const res: any = await getStringerRank({ period: 'month', limit: 5 })
     const data = res?.data?.data
-    rankData.value = Array.isArray(data) ? data : mockRankData()
+    rankData.value = Array.isArray(data) ? data : []
   } catch {
-    rankData.value = mockRankData()
+    rankData.value = []
   } finally {
     rankLoading.value = false
   }
@@ -182,47 +180,11 @@ function renderBarChart(ranking: { name: string; orders: number }[]) {
   })
 }
 
-// ==================== Mock 数据 ====================
-function mockStats(): PerformanceStats {
-  return {
-    totalOrders: 328,
-    totalStringingFee: 19680,
-    avgDuration: 35,
-    newMembersThisMonth: 42,
-    dailyOrdersTrend: mockDailyTrend(),
-    stringerRanking: mockRankData(),
-  }
-}
-
-function mockDailyTrend(): { date: string; count: number }[] {
-  const data: { date: string; count: number }[] = []
-  const now = new Date()
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now)
-    d.setDate(d.getDate() - i)
-    data.push({
-      date: `${d.getMonth() + 1}/${d.getDate()}`,
-      count: Math.floor(Math.random() * 15) + 5,
-    })
-  }
-  return data
-}
-
-function mockRankData(): StringerRank[] {
-  return [
-    { name: '王师傅', orders: 156, totalAmount: 9360, avgDuration: 28 },
-    { name: '李师傅', orders: 98, totalAmount: 5880, avgDuration: 32 },
-    { name: '张师傅', orders: 74, totalAmount: 4440, avgDuration: 38 },
-    { name: '刘师傅', orders: 52, totalAmount: 3120, avgDuration: 40 },
-    { name: '陈师傅', orders: 41, totalAmount: 2460, avgDuration: 35 },
-  ]
-}
-
 // ==================== 生命周期 ====================
 onMounted(async () => {
   await Promise.all([fetchStats(), fetchRank()])
   // 渲染柱状图（依赖 ranking 数据）
-  setTimeout(() => renderBarChart(stats.stringerRanking.length ? stats.stringerRanking : mockRankData()), 100)
+  setTimeout(() => renderBarChart(stats.stringerRanking.length ? stats.stringerRanking : []), 100)
   window.addEventListener('resize', handleResize)
 })
 

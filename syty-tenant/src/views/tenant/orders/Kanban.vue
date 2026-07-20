@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="kanban-page">
     <div class="kanban-header">
       <h1 class="kanban-title">🏸 穿线看板</h1>
@@ -143,7 +143,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'antdv-next'
 import { ReloadOutlined, UserOutlined } from '@antdv-next/icons'
-import { getOrderPage, completeOrder as apiCompleteOrder, type StringingOrder } from '@/api'
+import { getOrderPage, completeOrder as apiCompleteOrder, startStringing as apiStartStringing, type StringingOrder } from '@/api'
 
 const router = useRouter()
 const loading = ref(false)
@@ -180,9 +180,9 @@ const refreshOrders = () => {
 /** 开始穿线 */
 const startStringing = async (order: StringingOrder) => {
   try {
-    // TODO: 调用后端接口更新状态为穿线中 (status=1)
-    // await updateOrderStatus(order.id!, 1)
-    message.info(`开始穿线: ${order.orderNo} (待后端接口就绪)`)
+    await apiStartStringing(order.id!)
+    message.success(`${order.orderNo} 已开始穿线`)
+    await loadOrders()
   } catch {
     message.error('操作失败')
   }

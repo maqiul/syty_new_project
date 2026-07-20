@@ -301,6 +301,29 @@ public class StringingOrderController {
         return Result.success();
     }
 
+    @Operation(summary = "开始穿线 (状态流转: 待穿→穿线中)")
+    @PutMapping("/{id}/start")
+    public Result<Void> startStringing(@PathVariable Long id) {
+        StringingOrder order = orderService.getById(id);
+        if (order == null) {
+            return Result.error("订单不存");
+        }
+        checkShopPermission(order.getShopId());
+        if (order.getStatus() != 0) {
+            return Result.error("只有待穿订单才能开始穿线，当前状态: " + order.getStatus());
+        }
+        StringingOrder update = new StringingOrder();
+        update.setId(id);
+        update.setStatus(1); // 1 = 穿线中
+        // 如果未指定穿线师，自动绑定当前操作人
+        if (order.getStringerId() == null) {
+            update.setStringerId(TenantContext.getUserId());
+        }
+        orderService.updateById(update);
+        log.info("开始穿线: orderId={}, orderNo={}", id, order.getOrderNo());
+        return Result.success();
+    }
+
     @Operation(summary = "确认完成(结账) - 扣库存记录支付+算提成")
     @PostMapping("/{id}/complete")
     public Result<Void> complete(@PathVariable Long id,

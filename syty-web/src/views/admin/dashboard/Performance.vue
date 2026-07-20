@@ -131,9 +131,9 @@ async function fetchShops() {
   try {
     const res: any = await getAdminShopList()
     const data = res?.data?.data
-    shopList.value = Array.isArray(data) ? data : mockShopList()
+    shopList.value = Array.isArray(data) ? data : []
   } catch {
-    shopList.value = mockShopList()
+    shopList.value = []
   } finally {
     shopLoading.value = false
   }
@@ -150,16 +150,12 @@ async function fetchStats() {
     if (data) {
       Object.assign(stats, data)
       renderLineChart(data.dailyOrdersTrend || [])
-      setTimeout(() => renderBarChart(data.stringerRanking || mockRankData()), 100)
+      setTimeout(() => renderBarChart(data.stringerRanking || []), 100)
     } else {
-      renderLineChart(mockDailyTrend())
-      Object.assign(stats, mockStats())
-      setTimeout(() => renderBarChart(mockRankData()), 100)
+      renderLineChart([])
     }
   } catch {
-    renderLineChart(mockDailyTrend())
-    Object.assign(stats, mockStats())
-    setTimeout(() => renderBarChart(mockRankData()), 100)
+    renderLineChart([])
   } finally {
     chartLoading.value = false
   }
@@ -169,9 +165,9 @@ async function fetchRank() {
   rankLoading.value = true
   try {
     // 从 stats 中取 ranking，管理端暂无单独 ranking API
-    rankData.value = stats.stringerRanking.length ? stats.stringerRanking : mockRankData()
+    rankData.value = stats.stringerRanking.length ? stats.stringerRanking : []
   } catch {
-    rankData.value = mockRankData()
+    rankData.value = []
   } finally {
     rankLoading.value = false
   }
@@ -224,53 +220,6 @@ function renderBarChart(ranking: { name: string; orders: number }[]) {
       label: { show: true, position: 'right' },
     }],
   })
-}
-
-// ==================== Mock 数据 ====================
-function mockStats(): AdminPerformanceStats {
-  return {
-    totalOrders: 1256,
-    totalStringingFee: 75360,
-    avgDuration: 33,
-    newMembersThisMonth: 128,
-    dailyOrdersTrend: mockDailyTrend(),
-    stringerRanking: mockRankData(),
-    shopCount: 5,
-  }
-}
-
-function mockShopList(): AdminShopInfo[] {
-  return [
-    { id: 1, name: '朝阳旗舰店' },
-    { id: 2, name: '海淀科技店' },
-    { id: 3, name: '西城运动店' },
-    { id: 4, name: '东城体验店' },
-    { id: 5, name: '丰台综合店' },
-  ]
-}
-
-function mockDailyTrend(): { date: string; count: number }[] {
-  const data: { date: string; count: number }[] = []
-  const now = new Date()
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now)
-    d.setDate(d.getDate() - i)
-    data.push({
-      date: `${d.getMonth() + 1}/${d.getDate()}`,
-      count: Math.floor(Math.random() * 40) + 10,
-    })
-  }
-  return data
-}
-
-function mockRankData() {
-  return [
-    { name: '王师傅', orders: 356, totalAmount: 21360, avgDuration: 28 },
-    { name: '李师傅', orders: 298, totalAmount: 17880, avgDuration: 32 },
-    { name: '张师傅', orders: 234, totalAmount: 14040, avgDuration: 38 },
-    { name: '刘师傅', orders: 198, totalAmount: 11880, avgDuration: 40 },
-    { name: '陈师傅', orders: 170, totalAmount: 10200, avgDuration: 35 },
-  ]
 }
 
 // ==================== 生命周期 ====================

@@ -83,69 +83,45 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getPlatformDashboardStats, getPlatformRecentLogs, type PlatformLogItem } from '@/api'
 
-// ---- Mock 统计卡片数据 ----
-const statsCards = computed(() => [
-  {
-    title: '租户总数',
-    value: 128,
-    color: '#3f8600',
-  },
-  {
-    title: '在线用户',
-    value: 45,
-    color: '#1890ff',
-    prefix: '👥',
-  },
-  {
-    title: '今日收入',
-    value: 3200,
-    color: '#cf1322',
-    prefix: '¥',
-    precision: 2,
-  },
-  {
-    title: '活跃套餐',
-    value: '基础版',
-    suffix: ' 80%',
-    color: '#faad14',
-  },
+// ---- 统计卡片数据 ----
+const statsCards = ref([
+  { title: '租户总数', value: 0, color: '#3f8600' },
+  { title: '活跃租户', value: 0, color: '#1890ff', prefix: '👥' },
+  { title: '用户总数', value: 0, color: '#cf1322' },
+  { title: '套餐数', value: 0, color: '#faad14' },
 ])
 
-// ---- Mock 操作日志数据 ----
-const logs = [
-  {
-    user: '管理员',
-    avatarColor: '#1677ff',
-    content: '新增租户「星辰教育」',
-    time: '2026-05-13 10:30',
-  },
-  {
-    user: '管理员',
-    avatarColor: '#1677ff',
-    content: '将「云端科技」套餐升级至专业版',
-    time: '2026-05-13 09:45',
-  },
-  {
-    user: '系统',
-    avatarColor: '#52c41a',
-    content: '租户「启航体育」已过期，自动停用',
-    time: '2026-05-13 08:00',
-  },
-  {
-    user: '管理员',
-    avatarColor: '#1677ff',
-    content: '新增套餐「企业定制版」',
-    time: '2026-05-12 16:20',
-  },
-  {
-    user: '管理员',
-    avatarColor: '#1677ff',
-    content: '删除租户「测试公司」',
-    time: '2026-05-12 14:10',
-  },
-]
+// ---- 操作日志数据 ----
+const logs = ref<PlatformLogItem[]>([])
+
+// ---- 加载数据 ----
+onMounted(async () => {
+  try {
+    const res: any = await getPlatformDashboardStats()
+    const data = res?.data?.data ?? res?.data ?? res
+    if (data) {
+      statsCards.value[0].value = data.tenantCount ?? 0
+      statsCards.value[1].value = data.activeTenantCount ?? 0
+      statsCards.value[2].value = data.userCount ?? 0
+      statsCards.value[3].value = data.packageDistribution?.length ?? 0
+    }
+  } catch (e) {
+    console.error('加载平台统计失败', e)
+  }
+  
+  try {
+    const res: any = await getPlatformRecentLogs(10)
+    const data = res?.data?.data ?? res?.data ?? res
+    if (Array.isArray(data)) {
+      logs.value = data
+    }
+  } catch (e) {
+    console.error('加载操作日志失败', e)
+  }
+})
 </script>
 
 <style scoped>

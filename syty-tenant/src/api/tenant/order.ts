@@ -1,4 +1,4 @@
-﻿import request from '../../utils/axios'
+import request from '../../utils/axios'
 
 export interface StringingOrder {
   id?: number
@@ -32,7 +32,8 @@ export function getOrder(id: number) { return request.get(`/order/${id}`) }
 export const getOrderDetail = getOrder
 export function createOrder(data: StringingOrder) { return request.post('/order', data) }
 export function updateOrder(data: StringingOrder) { return request.put(`/order/${data.id}`, data) }
-export function completeOrder(id: number) { return request.put(`/order/${id}/complete`) }
+export function completeOrder(id: number) { return request.post(`/order/${id}/complete`) }
+export function startStringing(id: number) { return request.put(`/order/${id}/start`) }
 export function deleteOrder(id: number) { return request.delete(`/order/${id}`) }
 export function printOrder(id: number) { return request.post(`/order/${id}/print`) }
 export function exportOrders(params?: any) { return request.get('/order/export', { params, responseType: 'blob' }) }

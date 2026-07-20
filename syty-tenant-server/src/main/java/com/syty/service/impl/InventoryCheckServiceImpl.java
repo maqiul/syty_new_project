@@ -56,6 +56,14 @@ public class InventoryCheckServiceImpl extends ServiceImpl<InventoryCheckMapper,
     }
 
     @Override
+    public List<InventoryCheckItem> getCheckItems(Long checkId) {
+        return itemMapper.selectList(
+            new LambdaQueryWrapper<InventoryCheckItem>()
+                .eq(InventoryCheckItem::getCheckId, checkId)
+                .orderByAsc(InventoryCheckItem::getStringId));
+    }
+
+    @Override
     @Transactional
     public void confirmCheck(Long checkId) {
         InventoryCheck check = getById(checkId);

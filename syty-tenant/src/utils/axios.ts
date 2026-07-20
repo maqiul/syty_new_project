@@ -1,4 +1,4 @@
-﻿import axios from 'axios'
+import axios from 'axios'
 import { message } from 'antdv-next'
 import router from '../router'
 import type { useUserStore } from '../store/user'
@@ -63,6 +63,10 @@ request.interceptors.request.use(
       // 从 store 读取租户ID
       if (userStore?.tenantId) {
         config.headers['X-Tenant-Id'] = userStore.tenantId
+      }
+      // V2.0 多门店隔离：自动注入当前门店编码
+      if (userStore?.currentShop?.shopCode) {
+        config.headers['X-Shop-Code'] = userStore.currentShop.shopCode
       }
     }
     return config

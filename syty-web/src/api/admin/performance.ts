@@ -23,3 +23,26 @@ export interface AdminShopInfo {
 export function getAdminShopList() {
   return request.get<AdminShopInfo[]>('/api/v1/admin/shops/list')
 }
+
+// ============ 平台 Dashboard 统计 ============
+export interface PlatformDashboardStats {
+  tenantCount: number
+  activeTenantCount: number
+  userCount: number
+  packageDistribution: { packageName: string; status: number; price: number }[]
+}
+
+export interface PlatformLogItem {
+  user: string
+  content: string
+  time: string
+  avatarColor: string
+}
+
+export function getPlatformDashboardStats() {
+  return request.get<PlatformDashboardStats>('/platform/dashboard/stats')
+}
+
+export function getPlatformRecentLogs(limit?: number) {
+  return request.get<PlatformLogItem[]>('/platform/dashboard/logs', { params: { limit } })
+}

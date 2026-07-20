@@ -16,6 +16,9 @@ public interface InventoryCheckService extends IService<InventoryCheck> {
     /** 批量录入实盘数 */
     void submitItems(Long checkId, List<InventoryCheckItem> items);
 
+    /** 查询盘点明细 */
+    List<InventoryCheckItem> getCheckItems(Long checkId);
+
     /** 确认盘点并更新库存 */
     void confirmCheck(Long checkId);
 

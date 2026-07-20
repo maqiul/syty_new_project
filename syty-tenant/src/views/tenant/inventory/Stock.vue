@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <a-card>
       <template #title>
@@ -363,11 +363,10 @@ async function fetchStockList() {
     if (selectedShopId.value) params.shopId = selectedShopId.value
     const res: any = await getStockList(params)
     const { records, total } = res?.data?.data ?? { records: [], total: 0 }
-    // Mock fallback
-    stockTableData.value = records.length ? mockTransformStock(records) : mockStockData()
+    stockTableData.value = transformStock(records)
     stockPagination.total = total || stockTableData.value.length
   } catch (e) {
-    stockTableData.value = mockStockData()
+    stockTableData.value = []
   } finally {
     stockLoading.value = false
   }
@@ -428,10 +427,10 @@ async function fetchCheckList() {
     }
     const res: any = await getCheckList(params)
     const { records, total } = res?.data?.data ?? { records: [], total: 0 }
-    checkTableData.value = records.length ? records : mockCheckData()
+    checkTableData.value = records.length ? records : []
     checkPagination.total = total || checkTableData.value.length
   } catch (e) {
-    checkTableData.value = mockCheckData()
+    checkTableData.value = []
   } finally {
     checkLoading.value = false
   }
@@ -461,7 +460,7 @@ async function handleCreateCheck() {
     createCheckVisible.value = false
     fetchCheckList()
   } catch (e) {
-    message.success('盘点单创建成功（Mock）')
+    message.error('盘点单创建失败，请重试')
     createCheckVisible.value = false
     fetchCheckList()
   } finally {
@@ -482,10 +481,20 @@ const checkItemColumns = [
   { title: '差异', dataIndex: 'difference', key: 'difference', width: 100 },
 ]
 
-function openCheckDetail(check: InventoryCheck) {
+async function openCheckDetail(check: InventoryCheck) {
   currentCheck.value = check
-  checkItemData.value = mockCheckItemData()
   checkDetailVisible.value = true
+  checkSaving.value = true
+  try {
+    const res: any = await getCheckItems(check.id)
+    const data = res?.data?.data ?? res?.data ?? res
+    checkItemData.value = Array.isArray(data) ? data : []
+  } catch (e) {
+    console.error('加载盘点明细失败', e)
+    checkItemData.value = []
+  } finally {
+    checkSaving.value = false
+  }
 }
 
 function calcDifference(record: CheckItem) {
@@ -502,7 +511,7 @@ async function handleSaveCheckItems() {
       currentCheck.value.status = 'IN_PROGRESS'
     }
   } catch (e) {
-    message.success('明细保存成功（Mock）')
+    message.error('明细保存失败，请重试')
   } finally {
     checkSaving.value = false
   }
@@ -516,7 +525,7 @@ async function handleConfirmCheck() {
     message.success('盘点已确认')
     currentCheck.value.status = 'CONFIRMED'
   } catch (e) {
-    message.success('盘点已确认（Mock）')
+    message.error('盘点确认失败，请重试')
     currentCheck.value.status = 'CONFIRMED'
   } finally {
     checkSaving.value = false
@@ -552,7 +561,7 @@ async function handleInbound() {
     fetchStockList()
   } catch (e: any) {
     if (e.errorFields) return
-    message.success('入库成功（Mock）')
+    message.error('入库失败，请重试')
     inboundVisible.value = false
   } finally {
     saving.value = false
@@ -591,7 +600,7 @@ async function handleAdjust() {
     fetchStockList()
   } catch (e: any) {
     if (e.errorFields) return
-    message.success('调整成功（Mock）')
+    message.error('调整失败，请重试')
     adjustVisible.value = false
   } finally {
     saving.value = false
@@ -697,20 +706,8 @@ async function fetchShopList() {
   }
 }
 
-// ==================== Mock 数据 ====================
-function mockStockData(): StockItem[] {
-  return [
-    { id: 1, shopId: 1, stringInfoId: 1, stringName: 'Yonex BG65', spec: '200m/卷', stock: 45, reserved: 10, available: 35, warningThreshold: 20, unit: '卷' },
-    { id: 2, shopId: 1, stringInfoId: 2, stringName: 'Yonex BG80', spec: '200m/卷', stock: 18, reserved: 5, available: 13, warningThreshold: 15, unit: '卷' },
-    { id: 3, shopId: 1, stringInfoId: 3, stringName: 'Victor VBS-66N', spec: '200m/卷', stock: 30, reserved: 8, available: 22, warningThreshold: 10, unit: '卷' },
-    { id: 4, shopId: 1, stringInfoId: 4, stringName: 'Li-Ning No.1', spec: '200m/卷', stock: 8, reserved: 2, available: 6, warningThreshold: 10, unit: '卷' },
-    { id: 5, shopId: 1, stringInfoId: 5, stringName: 'Kason KG520', spec: '200m/卷', stock: 22, reserved: 5, available: 17, warningThreshold: 10, unit: '卷' },
-    { id: 6, shopId: 1, stringInfoId: 6, stringName: 'Yonex BG65 Ti', spec: '200m/卷', stock: 15, reserved: 3, available: 12, warningThreshold: 8, unit: '卷' },
-    { id: 7, shopId: 1, stringInfoId: 7, stringName: 'Gosen R4X', spec: '200m/卷', stock: 5, reserved: 1, available: 4, warningThreshold: 5, unit: '卷' },
-  ]
-}
-
-function mockTransformStock(records: any[]): StockItem[] {
+// ==================== 数据转换工具 ====================
+function transformStock(records: any[]): StockItem[] {
   return records.map((r: any, i: number) => ({
     id: r.id || i + 1,
     shopId: r.shopId || 1,
@@ -723,26 +720,6 @@ function mockTransformStock(records: any[]): StockItem[] {
     warningThreshold: r.minStockAlert || r.warningThreshold || 10,
     unit: r.unit || '卷',
   }))
-}
-
-function mockCheckData(): InventoryCheck[] {
-  return [
-    { id: 1, checkNo: 'IC20260512001', createdAt: '2026-05-12 10:00', operatorName: '张三', status: 'IN_PROGRESS', remark: '月度盘点' },
-    { id: 2, checkNo: 'IC20260501001', createdAt: '2026-05-01 09:00', operatorName: '李四', status: 'CONFIRMED', remark: '月初盘点' },
-    { id: 3, checkNo: 'IC20260415001', createdAt: '2026-04-15 14:00', operatorName: '张三', status: 'COMPLETED', remark: '' },
-  ]
-}
-
-function mockCheckItemData(): CheckItem[] {
-  return [
-    { id: 1, checkId: 1, stringName: 'Yonex BG65', bookQuantity: 45, actualQuantity: 44, difference: -1 },
-    { id: 2, checkId: 1, stringName: 'Yonex BG80', bookQuantity: 18, actualQuantity: 18, difference: 0 },
-    { id: 3, checkId: 1, stringName: 'Victor VBS-66N', bookQuantity: 30, actualQuantity: 29, difference: -1 },
-    { id: 4, checkId: 1, stringName: 'Li-Ning No.1', bookQuantity: 8, actualQuantity: 7, difference: -1 },
-    { id: 5, checkId: 1, stringName: 'Kason KG520', bookQuantity: 22, actualQuantity: 22, difference: 0 },
-    { id: 6, checkId: 1, stringName: 'Yonex BG65 Ti', bookQuantity: 15, actualQuantity: 15, difference: 0 },
-    { id: 7, checkId: 1, stringName: 'Gosen R4X', bookQuantity: 5, actualQuantity: 5, difference: 0 },
-  ]
 }
 
 // ==================== 初始化 ====================

@@ -32,6 +32,11 @@ public class InventoryCheckController {
         return Result.success(checkService.pageCheck(new Page<>(page, size), tenantId));
     }
 
+    @GetMapping("/{id}/items")
+    public Result<List<InventoryCheckItem>> getCheckItems(@PathVariable Long id) {
+        return Result.success(checkService.getCheckItems(id));
+    }
+
     @PutMapping("/{id}/items")
     public Result<Void> submitItems(@PathVariable Long id, @RequestBody List<InventoryCheckItem> items) {
         checkService.submitItems(id, items);

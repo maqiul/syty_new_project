@@ -52,11 +52,12 @@ import {
   DesktopOutlined,
   SettingOutlined,
 } from '@ant-design/icons-vue'
+import { getPlatformDashboardStats, getPlatformRecentLogs } from '@/api'
 
 const stats = ref([
   { label: '租户数', value: '--', icon: ApartmentOutlined, color: '#1677ff' },
   { label: '用户数', value: '--', icon: UserOutlined, color: '#52c41a' },
-  { label: '订单数', value: '--', icon: FileTextOutlined, color: '#faad14' },
+  { label: '活跃租户', value: '--', icon: FileTextOutlined, color: '#faad14' },
   { label: '系统状态', value: '运行中', icon: DesktopOutlined, color: '#8c8c8c' },
 ])
 
@@ -76,8 +77,35 @@ const quickLinks = [
   { label: '操作日志', path: '/operation-log', icon: FileTextOutlined },
 ]
 
-onMounted(() => {
-  // TODO: Fetch real data
+onMounted(async () => {
+  // 加载统计数据
+  try {
+    const res: any = await getPlatformDashboardStats()
+    const data = res?.data?.data ?? res?.data ?? res
+    if (data) {
+      stats.value[0].value = data.tenantCount ?? 0
+      stats.value[1].value = data.userCount ?? 0
+      stats.value[2].value = data.activeTenantCount ?? 0
+    }
+  } catch (e) {
+    console.error('加载统计数据失败', e)
+  }
+  
+  // 加载操作日志
+  try {
+    const res: any = await getPlatformRecentLogs(10)
+    const data = res?.data?.data ?? res?.data ?? res
+    if (Array.isArray(data)) {
+      recentLogs.value = data.map((item: any) => ({
+        user: item.user || '系统',
+        action: item.content || '',
+        target: '',
+        time: item.time || '',
+      }))
+    }
+  } catch (e) {
+    console.error('加载操作日志失败', e)
+  }
 })
 </script>
 
