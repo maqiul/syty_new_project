@@ -54,14 +54,14 @@ export interface ShopString {
   shopId?: number
 }
 
-/** 获取店铺穿线信息列表（待后端实现） */
-export function getShopStrings(shopId?: number) { return Promise.resolve({ data: [] as ShopString[] }) }
-export function saveShopString(data: ShopString) { return Promise.resolve({ data }) }
-export function updateShopString(data: ShopString) { return Promise.resolve({ data }) }
-export function deleteShopString(id: number) { return Promise.resolve({ data: null }) }
+/** 获取店铺穿线信息列表 */
+export function getShopStrings(shopId?: number) { return request.get('/shop/string/list', { params: { shopId } }) }
+export function saveShopString(data: ShopString) { return request.post('/shop/string', data) }
+export function updateShopString(data: ShopString) { return request.put('/shop/string', data) }
+export function deleteShopString(id: number) { return request.delete(`/shop/string/${id}`) }
 
 /** 租户端不需要租户列表，返回空 */
-export function getTenantList() { return Promise.resolve({ data: [] }) }
+export function getTenantList() { return request.get('/shop/tenant-list') }
 
 // --- 网球穿线相关（待后端实现） ---
 export interface TennisShopString {
@@ -72,7 +72,7 @@ export interface TennisShopString {
   stock: number
 }
 
-export function getTennisShopStrings(shopId?: number) { return Promise.resolve({ data: [] as TennisShopString[] }) }
-export function addTennisShopString(data: TennisShopString) { return Promise.resolve({ data }) }
-export function updateTennisShopString(data: TennisShopString) { return Promise.resolve({ data }) }
-export function deleteTennisShopString(id: number) { return Promise.resolve({ data: null }) }
+export function getTennisShopStrings(shopId?: number) { return request.get('/tennis/shop-string/list', { params: { shopId } }) }
+export function addTennisShopString(data: TennisShopString) { return request.post('/tennis/shop-string', data) }
+export function updateTennisShopString(data: TennisShopString) { return request.put('/tennis/shop-string', data) }
+export function deleteTennisShopString(id: number) { return request.delete(`/tennis/shop-string/${id}`) }
