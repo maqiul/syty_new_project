@@ -16,6 +16,26 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true
       },
+      '/api/user': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
+      '/api/role': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
+      '/api/permission': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
+      '/api/menu': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
+      '/api/operate-log': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
       '/api/v1': {
         target: 'http://localhost:8081',
         changeOrigin: true
