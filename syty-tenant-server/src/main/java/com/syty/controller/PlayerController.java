@@ -19,18 +19,26 @@ public class PlayerController {
     @GetMapping("/page")
     public Result<Page<Player>> page(@RequestParam(defaultValue = "1") int page,
                                      @RequestParam(defaultValue = "20") int size,
-                                     @RequestParam(required = false) String keyword) {
+                                     @RequestParam(required = false) String keyword,
+                                     @RequestParam(required = false) String sportType) {
         LambdaQueryWrapper<Player> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(sportType)) {
+            wrapper.eq(Player::getSportType, sportType);
+        }
         if (StringUtils.hasText(keyword)) {
-            wrapper.like(Player::getName, keyword).or().like(Player::getPhone, keyword);
+            wrapper.and(w -> w.like(Player::getName, keyword).or().like(Player::getPhone, keyword));
         }
         wrapper.orderByDesc(Player::getId);
         return Result.success(playerService.page(new Page<>(page, size), wrapper));
     }
     @Operation(summary = "球员列表(下拉)")
     @GetMapping("/list")
-    public Result<Object> list(@RequestParam(required = false) String keyword) {
+    public Result<Object> list(@RequestParam(required = false) String keyword,
+                               @RequestParam(required = false) String sportType) {
         LambdaQueryWrapper<Player> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(sportType)) {
+            wrapper.eq(Player::getSportType, sportType);
+        }
         if (StringUtils.hasText(keyword)) {
             wrapper.like(Player::getName, keyword);
         }

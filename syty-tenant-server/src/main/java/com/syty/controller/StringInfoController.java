@@ -20,11 +20,14 @@ public class StringInfoController {
     public Result<Page<StringInfo>> page(@RequestParam(defaultValue = "1") int page,
                                           @RequestParam(defaultValue = "20") int size,
                                           @RequestParam(required = false) String keyword,
-                                          @RequestParam(required = false) String brand) {
+                                          @RequestParam(required = false) String brand,
+                                          @RequestParam(required = false) String sportType) {
         LambdaQueryWrapper<StringInfo> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(sportType)) {
+            wrapper.eq(StringInfo::getSportType, sportType);
+        }
         if (StringUtils.hasText(keyword)) {
-            wrapper.like(StringInfo::getModel, keyword)
-                    .or().like(StringInfo::getBrand, keyword);
+            wrapper.and(w -> w.like(StringInfo::getModel, keyword).or().like(StringInfo::getBrand, keyword));
         }
         if (StringUtils.hasText(brand)) {
             wrapper.eq(StringInfo::getBrand, brand);
@@ -34,8 +37,12 @@ public class StringInfoController {
     }
     @Operation(summary = "球线列表(下拉)")
     @GetMapping("/list")
-    public Result<Object> list(@RequestParam(required = false) String brand) {
+    public Result<Object> list(@RequestParam(required = false) String brand,
+                               @RequestParam(required = false) String sportType) {
         LambdaQueryWrapper<StringInfo> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(sportType)) {
+            wrapper.eq(StringInfo::getSportType, sportType);
+        }
         if (StringUtils.hasText(brand)) {
             wrapper.eq(StringInfo::getBrand, brand);
         }

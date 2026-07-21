@@ -219,10 +219,14 @@ public class StringingOrderController {
                                               @RequestParam(required = false) Integer status,
                                               @RequestParam(required = false) String keyword,
                                               @RequestParam(required = false) String startDate,
-                                              @RequestParam(required = false) String endDate) {
+                                              @RequestParam(required = false) String endDate,
+                                              @RequestParam(required = false) String sportType) {
         LambdaQueryWrapper<StringingOrder> wrapper = new LambdaQueryWrapper<>();
         if (!TenantContext.isSuperAdmin()) {
             wrapper.eq(StringingOrder::getTenantId, TenantContext.getTenantId());
+        }
+        if (StringUtils.hasText(sportType)) {
+            wrapper.eq(StringingOrder::getSportType, sportType);
         }
         if (shopId != null) {
             wrapper.eq(StringingOrder::getShopId, shopId);

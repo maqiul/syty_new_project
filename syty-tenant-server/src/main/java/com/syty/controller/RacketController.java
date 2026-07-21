@@ -19,18 +19,26 @@ public class RacketController {
     @GetMapping("/page")
     public Result<Page<Racket>> page(@RequestParam(defaultValue = "1") int page,
                                      @RequestParam(defaultValue = "20") int size,
-                                     @RequestParam(required = false) String keyword) {
+                                     @RequestParam(required = false) String keyword,
+                                     @RequestParam(required = false) String sportType) {
         LambdaQueryWrapper<Racket> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(sportType)) {
+            wrapper.eq(Racket::getSportType, sportType);
+        }
         if (StringUtils.hasText(keyword)) {
-            wrapper.like(Racket::getBrand, keyword).or().like(Racket::getModel, keyword);
+            wrapper.and(w -> w.like(Racket::getBrand, keyword).or().like(Racket::getModel, keyword));
         }
         wrapper.orderByDesc(Racket::getId);
         return Result.success(racketService.page(new Page<>(page, size), wrapper));
     }
     @Operation(summary = "球拍列表(下拉)")
     @GetMapping("/list")
-    public Result<Object> list() {
-        return Result.success(racketService.list());
+    public Result<Object> list(@RequestParam(required = false) String sportType) {
+        LambdaQueryWrapper<Racket> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(sportType)) {
+            wrapper.eq(Racket::getSportType, sportType);
+        }
+        return Result.success(racketService.list(wrapper));
     }
     @Operation(summary = "获取球拍详情")
     @GetMapping("/{id}")

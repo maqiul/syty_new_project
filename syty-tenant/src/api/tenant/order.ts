@@ -16,6 +16,7 @@ export interface StringingOrder {
   mainTension: number
   crossTension: number
   status: number
+  sportType?: string  // BADMINTON | TENNIS
   totalPrice?: number
   remark?: string
   operatorId?: number
@@ -38,12 +39,13 @@ export function deleteOrder(id: number) { return request.delete(`/order/${id}`) 
 export function printOrder(id: number) { return request.post(`/order/${id}/print`) }
 export function exportOrders(params?: any) { return request.get('/order/export', { params, responseType: 'blob' }) }
 
-// ============ 网球订单 ============
-export interface TennisOrder extends StringingOrder {}
+// ============ 网球订单（兼容层，代理到统一接口） ============
+// @deprecated 后续版本删除，请使用统一接口 + sportType='TENNIS'
+export type TennisOrder = StringingOrder
 
-export function getTennisOrderPage(params?: any) { return request.get('/tennis/order/page', { params }) }
-export function getTennisOrder(id: number) { return request.get(`/tennis/order/${id}`) }
-export function createTennisOrder(data: TennisOrder) { return request.post('/tennis/order', data) }
-export function updateTennisOrder(data: TennisOrder) { return request.put(`/tennis/order/${data.id}`, data) }
-export function completeTennisOrder(id: number) { return request.put(`/tennis/order/${id}/complete`) }
-export function deleteTennisOrder(id: number) { return request.delete(`/tennis/order/${id}`) }
+export function getTennisOrderPage(params?: any) { return getOrderPage({ ...params, sportType: 'TENNIS' }) }
+export function getTennisOrder(id: number) { return getOrder(id) }
+export function createTennisOrder(data: TennisOrder) { return createOrder({ ...data, sportType: 'TENNIS' }) }
+export function updateTennisOrder(data: TennisOrder) { return updateOrder({ ...data, sportType: 'TENNIS' }) }
+export function completeTennisOrder(id: number) { return completeOrder(id) }
+export function deleteTennisOrder(id: number) { return deleteOrder(id) }

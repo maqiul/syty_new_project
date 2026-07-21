@@ -1,4 +1,4 @@
-﻿import { createRouter, createWebHistory, type RouteRecordRaw, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router'
 import type { useUserStore } from '../store/user'
 import type { MenuItem } from '../store/user'
 
@@ -52,7 +52,13 @@ const componentMap: Record<string, () => Promise<any>> = {
   '/shop-string': () => import('../views/tenant/assets/ShopStrings.vue'),
   '/finance': () => import('../views/tenant/Finance.vue'),
 
-  // --- Tenant: 网球资产 ---
+  // --- Tenant: 统一资产（羽网合并） ---
+  '/player': () => import('../views/tenant/assets/Player.vue'),
+  '/racket': () => import('../views/tenant/assets/Racket.vue'),
+  '/string': () => import('../views/tenant/assets/String.vue'),
+  '/supplier': () => import('../views/tenant/assets/Supplier.vue'),
+
+  // --- Tenant: 网球资产（旧，保留兼容） ---
   '/tennis/player': () => import('../views/tenant/assets/TennisPlayer.vue'),
   '/tennis/racket': () => import('../views/tenant/assets/TennisRacket.vue'),
   '/tennis/string': () => import('../views/tenant/assets/TennisString.vue'),
@@ -84,6 +90,22 @@ const titleMap: Record<string, string> = {
   '/tennis/order': '网球订单',
   '/tennis/tournament': '网球赛事',
   '/tennis/tournament/list': '网球赛事列表',
+  '/player': '球员管理',
+  '/racket': '球拍管理',
+  '/string': '球线管理',
+  '/supplier': '供应商管理',
+  '/player': '球员管理',
+  '/racket': '球拍管理',
+  '/string': '球线管理',
+  '/supplier': '供应商管理',
+  '/player': '球员管理',
+  '/racket': '球拍管理',
+  '/string': '球线管理',
+  '/supplier': '供应商管理',
+  '/player': '球员管理',
+  '/racket': '球拍管理',
+  '/string': '球线管理',
+  '/supplier': '供应商管理',
   '/tennis/player': '网球球员',
   '/tennis/racket': '网球球拍',
   '/tennis/string': '网球线材',

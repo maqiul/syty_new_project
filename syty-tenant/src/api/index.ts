@@ -1,4 +1,4 @@
-﻿/**
+/**
  * API 统一入口 — 租户端专属
  */
 
@@ -20,3 +20,4 @@ export * from './tenant/finance'
 export * from './tenant/dashboard'
 export * from './tenant/performance'
 export * from './tenant/log'
+export * from './tenant/supplier'
