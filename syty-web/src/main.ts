@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
-import Antd from 'ant-design-vue'
-import 'ant-design-vue/dist/reset.css'
+import Antd from 'antdv-next'
+import 'antdv-next/dist/reset.css'
 import './styles/global.css'
 import App from './App.vue'
 import router, { setUserStore as setRouterStore, addDynamicRoutes } from './router'

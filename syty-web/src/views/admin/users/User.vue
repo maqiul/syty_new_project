@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <a-card>
       <template #title>
@@ -83,8 +83,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { message, Modal } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { message, Modal } from 'antdv-next'
+import { PlusOutlined } from '@antdv-next/icons'
 import { getUserPage, addUser, updateUser, deleteUser, getTenantList, resetPassword, type SysUser, type Tenant } from '@/api'
 import { useUserStore } from '@/store/user'
 

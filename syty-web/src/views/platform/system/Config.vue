@@ -79,8 +79,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { message } from 'ant-design-vue'
-import { SaveOutlined } from '@ant-design/icons-vue'
+import { message } from 'antdv-next'
+import { SaveOutlined } from '@antdv-next/icons'
 import request from '@/utils/axios'
 
 interface SysConfig {

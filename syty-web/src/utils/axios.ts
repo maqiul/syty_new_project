@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { message } from 'ant-design-vue'
+import { message } from 'antdv-next'
 import router from '../router'
 import type { useUserStore } from '../store/user'
 

@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined } from '@antdv-next/icons'
 
 const columns = [
   { title: '用户名', dataIndex: 'username', key: 'username' },

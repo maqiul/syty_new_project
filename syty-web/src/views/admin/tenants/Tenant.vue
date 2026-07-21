@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <a-card>
       <template #title>
@@ -70,8 +70,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { message, Modal } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { message, Modal } from 'antdv-next'
+import { PlusOutlined } from '@antdv-next/icons'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 dayjs.extend(utc)

@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { FileTextOutlined, DollarOutlined, ClockCircleOutlined, UserAddOutlined } from '@ant-design/icons-vue'
+import { FileTextOutlined, DollarOutlined, ClockCircleOutlined, UserAddOutlined } from '@antdv-next/icons'
 import * as echarts from 'echarts'
 import { getAdminPerformanceStats, getAdminShopList, type AdminPerformanceStats, type AdminShopInfo } from '@/api/admin/performance'
 

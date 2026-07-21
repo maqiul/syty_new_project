@@ -75,7 +75,7 @@ import {
   SettingOutlined, AppstoreOutlined, ShoppingOutlined, TrophyOutlined,
   LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, DownOutlined,
   LockOutlined, SafetyOutlined
-} from '@ant-design/icons-vue'
+} from '@antdv-next/icons'
 import { useUserStore } from '@/store/user'
 
 const router = useRouter()

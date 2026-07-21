@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <a-card title="权限管理" :bordered="false">
       <template #extra>
@@ -88,8 +88,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { message } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { message } from 'antdv-next'
+import { PlusOutlined } from '@antdv-next/icons'
 import request from '@/utils/axios'
 
 interface Permission {

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <a-card>
       <template #title>
@@ -59,8 +59,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { message, Modal, Upload } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { message, Modal, Upload } from 'antdv-next'
+import { PlusOutlined } from '@antdv-next/icons'
 import { getPlayerPage, addPlayer, updatePlayer, deletePlayer, uploadFile, type Player } from '@/api'
 import { useUserStore } from '@/store/user'
 

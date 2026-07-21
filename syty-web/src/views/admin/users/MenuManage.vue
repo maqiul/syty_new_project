@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <a-card title="菜单管理" :bordered="false">
       <template #extra>
@@ -87,14 +87,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { message } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { message } from 'antdv-next'
+import { PlusOutlined } from '@antdv-next/icons'
 import request from '@/utils/axios'
 import {
   DashboardOutlined, TeamOutlined, AuditOutlined, PrinterOutlined,
   SettingOutlined, AppstoreOutlined, ShoppingOutlined, UnorderedListOutlined,
   TrophyOutlined, MenuOutlined, LockOutlined, SafetyOutlined
-} from '@ant-design/icons-vue'
+} from '@antdv-next/icons'
 
 const iconMap: Record<string, any> = {
   DashboardOutlined, TeamOutlined, AuditOutlined, PrinterOutlined,

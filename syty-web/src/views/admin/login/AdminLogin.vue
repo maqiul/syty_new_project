@@ -36,8 +36,8 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { message, type FormInstance } from 'ant-design-vue'
-import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
+import { message, type FormInstance } from 'antdv-next'
+import { UserOutlined, LockOutlined } from '@antdv-next/icons'
 import { useUserStore } from '@/store/user'
 
 const router = useRouter()

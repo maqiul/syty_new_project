@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <a-card>
       <template #title>
@@ -58,8 +58,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { message } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { message } from 'antdv-next'
+import { PlusOutlined } from '@antdv-next/icons'
 import request from '@/utils/axios'
 
 const loading = ref(false)

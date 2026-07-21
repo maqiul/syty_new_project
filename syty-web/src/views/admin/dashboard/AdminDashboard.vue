@@ -51,7 +51,7 @@ import {
   FileTextOutlined,
   DesktopOutlined,
   SettingOutlined,
-} from '@ant-design/icons-vue'
+} from '@antdv-next/icons'
 import { getPlatformDashboardStats, getPlatformRecentLogs } from '@/api'
 
 const stats = ref([

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <a-card>
       <template #title>操作日志</template>

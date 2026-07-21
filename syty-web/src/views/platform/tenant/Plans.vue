@@ -48,8 +48,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
+import { PlusOutlined } from '@antdv-next/icons'
+import { message } from 'antdv-next'
 import { getPlatformPackagesList, addPlatformPackage, updatePlatformPackage, deletePlatformPackage } from '@/api/admin/package'
 
 const columns = [
