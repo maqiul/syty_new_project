@@ -1,8 +1,8 @@
-﻿<template>
+<template>
   <div>
     <!-- 统计卡片 -->
     <a-row :gutter="[16, 16]" style="margin-bottom: 16px">
-      <a-col :span="8">
+      <a-col :span="6">
         <a-card hoverable>
           <a-statistic
             title="今日营收"
@@ -16,7 +16,7 @@
           </a-statistic>
         </a-card>
       </a-col>
-      <a-col :span="8">
+      <a-col :span="6">
         <a-card hoverable>
           <a-statistic
             title="本月营收"
@@ -30,7 +30,7 @@
           </a-statistic>
         </a-card>
       </a-col>
-      <a-col :span="8">
+      <a-col :span="6">
         <a-card hoverable>
           <a-statistic
             title="挂账总额"
@@ -44,10 +44,26 @@
           </a-statistic>
         </a-card>
       </a-col>
+      <a-col :span="6">
+        <a-card hoverable>
+          <a-statistic
+            title="欠款客户数"
+            :value="stats.debtPlayerCount"
+            :value-style="{ color: '#cf1322' }"
+          >
+            <template #prefix>
+              <TeamOutlined />
+            </template>
+          </a-statistic>
+        </a-card>
+      </a-col>
     </a-row>
 
-    <!-- 订单列表 -->
-    <a-card>
+    <!-- Tab 切换 -->
+    <a-tabs v-model:activeKey="activeTab">
+      <!-- Tab 1: 订单列表 -->
+      <a-tab-pane key="orders" tab="订单列表">
+      <a-card>
       <template #title>
         <div style="display: flex; justify-content: space-between; align-items: center">
           <span>穿线订单列表</span>
@@ -172,6 +188,72 @@
       <!-- 空状态 -->
       <a-empty v-if="!paymentLoading && paymentData.length === 0" description="暂无支付记录" />
     </a-modal>
+      </a-card>
+      </a-tab-pane>
+
+      <!-- Tab 2: 客户欠款 -->
+      <a-tab-pane key="debt" tab="客户欠款">
+        <a-card>
+          <template #title>
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <span>客户欠款查询</span>
+              <a-button @click="fetchDebtList"><template #icon><ReloadOutlined /></template>刷新</a-button>
+            </div>
+          </template>
+
+          <div style="margin-bottom: 16px">
+            <a-space>
+              <a-input v-model:value="debtKeyword" placeholder="搜索客户姓名/手机号" style="width: 200px" @pressEnter="fetchDebtList" />
+              <a-button type="primary" @click="fetchDebtList">搜索</a-button>
+            </a-space>
+          </div>
+
+          <a-table :columns="debtColumns" :dataSource="debtData" :loading="debtLoading" :pagination="debtPagination" rowKey="playerId" @change="handleDebtTableChange">
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.dataIndex === 'totalDebt'">
+                <span style="color: #ff4d4f; font-weight: bold">¥{{ record.totalDebt?.toFixed(2) }}</span>
+              </template>
+              <template v-if="column.key === 'action'">
+                <a @click="openDebtDetail(record)">查看明细</a>
+              </template>
+            </template>
+          </a-table>
+        </a-card>
+      </a-tab-pane>
+    </a-tabs>
+
+    <!-- 欠款明细弹窗 -->
+    <a-modal v-model:open="debtDetailVisible" :title="`欠款明细 - ${currentDebtPlayer?.playerName || ''}`" width="700px" :footer="null">
+      <a-table :columns="debtDetailColumns" :dataSource="debtDetailData" :loading="debtDetailLoading" rowKey="orderId" size="small">
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.dataIndex === 'debtAmount'">
+            <span style="color: #ff4d4f; font-weight: bold">¥{{ record.debtAmount?.toFixed(2) }}</span>
+          </template>
+          <template v-if="column.key === 'action'">
+            <a @click="openRepayDialog(record)">还款</a>
+          </template>
+        </template>
+      </a-table>
+    </a-modal>
+
+    <!-- 还款弹窗 -->
+    <a-modal v-model:open="repayVisible" title="客户还款" width="400px" @ok="handleRepay" :confirmLoading="repaying">
+      <a-form :label-col="{ span: 6 }" :wrapper-col="{ span: 16 }">
+        <a-form-item label="订单号">{{ repayForm.orderNo }}</a-form-item>
+        <a-form-item label="欠款金额">¥{{ repayForm.debtAmount?.toFixed(2) }}</a-form-item>
+        <a-form-item label="还款金额" required>
+          <a-input-number v-model:value="repayForm.amount" :min="0.01" :max="repayForm.debtAmount" :precision="2" style="width: 100%" />
+        </a-form-item>
+        <a-form-item label="支付方式">
+          <a-select v-model:value="repayForm.payMethod">
+            <a-select-option value="CASH">现金</a-select-option>
+            <a-select-option value="WECHAT">微信</a-select-option>
+            <a-select-option value="ALIPAY">支付宝</a-select-option>
+            <a-select-option value="TRANSFER">转账</a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
@@ -179,8 +261,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'antdv-next'
-import { PayCircleOutlined, CalendarOutlined, FileTextOutlined } from '@antdv-next/icons'
+import { PayCircleOutlined, CalendarOutlined, FileTextOutlined, TeamOutlined, ReloadOutlined } from '@antdv-next/icons'
 import { getShopList, getFinanceStats, getStringingOrderPage, getPaymentRecordList, type Shop } from '@/api'
+import request from '@/utils/axios'
 
 // ========== 类型定义 ==========
 
@@ -188,6 +271,7 @@ interface FinanceStats {
   todayRevenue: number
   monthRevenue: number
   onAccountTotal: number
+  debtPlayerCount: number
 }
 
 interface StringingOrder {
@@ -218,8 +302,11 @@ interface PaymentRecord {
 const stats = reactive<FinanceStats>({
   todayRevenue: 0,
   monthRevenue: 0,
-  onAccountTotal: 0
+  onAccountTotal: 0,
+  debtPlayerCount: 0
 })
+
+const activeTab = ref('orders')
 
 /** 获取统计数据 - 真实接口 */
 const fetchStats = async () => {
@@ -386,6 +473,82 @@ const payMethodText = (method: string) => {
 }
 
 // ========== 初始化 ==========
+
+// ========== 客户欠款 ==========
+
+const debtLoading = ref(false)
+const debtData = ref<any[]>([])
+const debtKeyword = ref('')
+const debtPagination = reactive({ current: 1, pageSize: 10, total: 0 })
+const debtColumns = [
+  { title: '客户姓名', dataIndex: 'playerName', width: 120 },
+  { title: '手机号', dataIndex: 'playerPhone', width: 140 },
+  { title: '总欠款', dataIndex: 'totalDebt', width: 120 },
+  { title: '挂账笔数', dataIndex: 'debtOrderCount', width: 100 },
+  { title: '操作', key: 'action', width: 100 }
+]
+
+const debtDetailVisible = ref(false)
+const debtDetailLoading = ref(false)
+const debtDetailData = ref<any[]>([])
+const currentDebtPlayer = ref<any>(null)
+const debtDetailColumns = [
+  { title: '订单号', dataIndex: 'orderNo', width: 160 },
+  { title: '金额', dataIndex: 'totalPrice', width: 100 },
+  { title: '已付', dataIndex: 'paidAmount', width: 100 },
+  { title: '欠款', dataIndex: 'debtAmount', width: 100 },
+  { title: '下单时间', dataIndex: 'createdAt', width: 180 },
+  { title: '操作', key: 'action', width: 80 }
+]
+
+const repayVisible = ref(false)
+const repaying = ref(false)
+const repayForm = reactive({ orderId: 0, orderNo: '', debtAmount: 0, amount: 0, payMethod: 'CASH' })
+
+const fetchDebtList = async () => {
+  debtLoading.value = true
+  try {
+    const res: any = await request.get('/api/finance/debt/summary', { params: { keyword: debtKeyword.value, current: debtPagination.current, size: debtPagination.pageSize } })
+    const data = res?.data?.data || res?.data || {}
+    debtData.value = data?.records || data?.list || []
+    debtPagination.total = data?.total || 0
+  } catch { debtData.value = [] }
+  finally { debtLoading.value = false }
+}
+
+const handleDebtTableChange = (p: any) => { debtPagination.current = p.current; debtPagination.pageSize = p.pageSize; fetchDebtList() }
+
+const openDebtDetail = async (record: any) => {
+  currentDebtPlayer.value = record
+  debtDetailVisible.value = true
+  debtDetailLoading.value = true
+  try {
+    const res: any = await request.get(`/api/finance/debt?playerId=${record.playerId}`)
+    debtDetailData.value = res?.data?.data?.debtOrders || res?.data?.debtOrders || []
+  } catch { debtDetailData.value = [] }
+  finally { debtDetailLoading.value = false }
+}
+
+const openRepayDialog = (record: any) => {
+  repayForm.orderId = record.orderId
+  repayForm.orderNo = record.orderNo
+  repayForm.debtAmount = record.debtAmount
+  repayForm.amount = record.debtAmount
+  repayForm.payMethod = 'CASH'
+  repayVisible.value = true
+}
+
+const handleRepay = async () => {
+  repaying.value = true
+  try {
+    await request.post('/api/finance/repay', { orderId: repayForm.orderId, amount: repayForm.amount, payMethod: repayForm.payMethod })
+    message.success('还款成功')
+    repayVisible.value = false
+    openDebtDetail(currentDebtPlayer.value)
+    fetchStats()
+  } catch { message.error('还款失败') }
+  finally { repaying.value = false }
+}
 
 onMounted(async () => {
   fetchStats()
