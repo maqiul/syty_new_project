@@ -1,28 +1,28 @@
 /**
  * 供应商管理 API
  */
-import request from '@/utils/request'
+import request from '@/utils/axios'
 
 export function getSupplierPage(params: any) {
-  return request.get('/api/supplier/page', { params })
+  return request.get('/supplier/page', { params })
 }
 
 export function getSupplierList(params?: any) {
-  return request.get('/api/supplier/list', { params })
+  return request.get('/supplier/list', { params })
 }
 
 export function getSupplierById(id: number) {
-  return request.get(`/api/supplier/${id}`)
+  return request.get(`/supplier/${id}`)
 }
 
 export function addSupplier(data: any) {
-  return request.post('/api/supplier', data)
+  return request.post('/supplier', data)
 }
 
 export function updateSupplier(data: any) {
-  return request.put('/api/supplier', data)
+  return request.put('/supplier', data)
 }
 
 export function deleteSupplier(id: number) {
-  return request.delete(`/api/supplier/${id}`)
+  return request.delete(`/supplier/${id}`)
 }

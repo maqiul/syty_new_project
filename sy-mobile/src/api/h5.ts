@@ -47,3 +47,19 @@ export const getAvailableCards = (phone: string) => {
     { params: { phone } }
   )
 }
+
+/** 订单进度查询（按订单号） */
+export const queryOrderByNo = (orderNo: string) => {
+  return request.get<any, { code: number; data: any; message?: string }>(
+    '/api/order/query',
+    { params: { orderNo } }
+  )
+}
+
+/** 订单进度查询（按手机号） */
+export const queryOrderByPhone = (phone: string) => {
+  return request.get<any, { code: number; data: any[]; message?: string }>(
+    '/api/order/query',
+    { params: { phone } }
+  )
+}

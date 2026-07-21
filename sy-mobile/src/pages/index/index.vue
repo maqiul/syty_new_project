@@ -121,6 +121,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { queryOrderByNo, queryOrderByPhone } from '@/api/h5'
 
 type QueryType = 'order' | 'phone'
 
@@ -150,38 +151,38 @@ const placeholderText = computed(() =>
   queryType.value === 'order' ? '请输入订单号' : '请输入手机号'
 )
 
-/**
- * 模拟查询接口
- * TODO: 替换为真实 API 调用
- */
-const mockQuery = async (): Promise<QueryResult | null> => {
-  // 模拟网络延迟
-  await new Promise((resolve) => setTimeout(resolve, 800))
+/** 状态映射 */
+const statusMap: Record<number, { text: string; class: string; step: number }> = {
+  0: { text: '待确认', class: 'status-pending', step: 0 },
+  1: { text: '已确认', class: 'status-confirmed', step: 1 },
+  2: { text: '穿线中', class: 'status-processing', step: 2 },
+  3: { text: '已完成', class: 'status-completed', step: 4 },
+  4: { text: '已取件', class: 'status-picked', step: 4 },
+}
 
-  const value = queryValue.value.trim()
-
-  // 模拟：输入任意非空值都返回数据，输入 "empty" 返回空
-  if (value.toLowerCase() === 'empty') {
-    return null
-  }
-
+/** 转换订单数据为展示格式 */
+const transformOrder = (order: any): QueryResult => {
+  const status = statusMap[order.status] || statusMap[0]
+  const progress = Math.round((status.step / 4) * 100)
+  
   return {
-    orderNo: queryType.value === 'order' ? value : 'SY20260512001',
-    statusText: '穿线中',
-    statusClass: 'status-processing',
-    progress: 60,
-    currentStep: 2,
+    orderNo: order.orderNo,
+    statusText: status.text,
+    statusClass: status.class,
+    progress,
+    currentStep: status.step,
     steps: [
-      { title: '订单确认', time: '2026-05-12 09:30' },
-      { title: '线材准备', time: '2026-05-12 10:00' },
-      { title: '穿线进行中', time: '2026-05-12 10:30' },
-      { title: '质检打包', time: '预计 14:00' },
-      { title: '已完成', time: '待处理' },
+      { title: '订单确认', time: order.createdAt || '' },
+      { title: '线材准备', time: '' },
+      { title: '穿线进行中', time: '' },
+      { title: '质检打包', time: '' },
+      { title: '已完成', time: order.completedAt || '待处理' },
     ],
-    remark: '您的球拍正在专业穿线中，预计今日 14:00 前完成。',
+    remark: order.remark || '',
   }
 }
 
+/** 真实 API 查询 */
 const handleQuery = async () => {
   if (!queryValue.value.trim()) return
 
@@ -190,11 +191,23 @@ const handleQuery = async () => {
   showEmpty.value = false
 
   try {
-    const data = await mockQuery()
-    if (data) {
-      result.value = data
+    const value = queryValue.value.trim()
+    
+    if (queryType.value === 'order') {
+      const res = await queryOrderByNo(value)
+      if (res.code === 200 && res.data) {
+        result.value = transformOrder(res.data)
+      } else {
+        showEmpty.value = true
+      }
     } else {
-      showEmpty.value = true
+      const res = await queryOrderByPhone(value)
+      if (res.code === 200 && res.data && res.data.length > 0) {
+        // 手机号查询返回最新一条
+        result.value = transformOrder(res.data[0])
+      } else {
+        showEmpty.value = true
+      }
     }
   } catch (error) {
     uni.showToast({

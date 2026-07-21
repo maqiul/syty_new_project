@@ -211,6 +211,39 @@ public class StringingOrderController {
         return Result.success(result);
     }
 
+    @Operation(summary = "订单进度查询（公开接口-移动端用）")
+    @GetMapping("/query")
+    public Result<Object> query(@RequestParam(required = false) String orderNo,
+                                 @RequestParam(required = false) String phone) {
+        if (!StringUtils.hasText(orderNo) && !StringUtils.hasText(phone)) {
+            return Result.error("请提供订单号或手机号");
+        }
+        LambdaQueryWrapper<StringingOrder> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(orderNo)) {
+            wrapper.eq(StringingOrder::getOrderNo, orderNo).or().eq(StringingOrder::getShortOrderNo, orderNo);
+        }
+        if (StringUtils.hasText(phone)) {
+            wrapper.eq(StringingOrder::getPlayerPhone, phone);
+        }
+        wrapper.orderByDesc(StringingOrder::getCreatedAt).last("LIMIT 10");
+        List<StringingOrder> orders = orderService.list(wrapper);
+        // 补充关联名称
+        for (StringingOrder o : orders) {
+            if (o.getShopId() != null) {
+                Shop s = shopService.getById(o.getShopId());
+                if (s != null) o.setShopName(s.getName());
+            }
+            if (o.getPlayerId() != null) {
+                Player p = playerService.getById(o.getPlayerId());
+                if (p != null) o.setPlayerName(p.getName());
+            }
+        }
+        if (StringUtils.hasText(orderNo) && !orders.isEmpty()) {
+            return Result.success(orders.get(0)); // 按订单号返回单条
+        }
+        return Result.success(orders); // 按手机号返回列表
+    }
+
     @Operation(summary = "分页查询订单")
     @GetMapping("/page")
     public Result<Page<StringingOrder>> page(@RequestParam(defaultValue = "1") int page,

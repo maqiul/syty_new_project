@@ -70,6 +70,12 @@ export function addStringInfo(data: StringInfo) { return request.post('/string-i
 export function updateStringInfo(data: StringInfo) { return request.put(`/string-info/${data.id}`, data) }
 export function deleteStringInfo(id: number) { return request.delete(`/string-info/${id}`) }
 
+// 统一球线接口别名 (String.vue 使用)
+export const getStringPage = getStringInfoPage
+export const addString = addStringInfo
+export const updateString = updateStringInfo
+export const deleteString = deleteStringInfo
+
 // ============ 网球基础数据（兼容层，代理到统一接口） ============
 // @deprecated 后续版本删除，请使用统一接口 + sportType='TENNIS'
 export function getTennisPlayerPage(params?: any) { return getPlayerPage({ ...params, sportType: 'TENNIS' }) }

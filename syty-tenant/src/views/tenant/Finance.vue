@@ -188,7 +188,6 @@
       <!-- 空状态 -->
       <a-empty v-if="!paymentLoading && paymentData.length === 0" description="暂无支付记录" />
     </a-modal>
-      </a-card>
       </a-tab-pane>
 
       <!-- Tab 2: 客户欠款 -->
