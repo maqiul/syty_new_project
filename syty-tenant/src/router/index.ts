@@ -32,6 +32,7 @@ const componentMap: Record<string, () => Promise<any>> = {
   // --- Tenant: 看板 ---
   '/dashboard': () => import('../views/tenant/dashboard/Dashboard.vue'),
   '/performance': () => import('../views/tenant/dashboard/Performance.vue'),
+  '/commission': () => import('../views/tenant/dashboard/Commission.vue'),
 
   // --- Tenant: 订单 ---
   '/order': () => import('../views/tenant/orders/Order.vue'),
@@ -48,6 +49,7 @@ const componentMap: Record<string, () => Promise<any>> = {
 
   // --- Tenant: 库存与资产 ---
   '/stock': () => import('../views/tenant/inventory/List.vue'),
+  '/stock-log': () => import('../views/tenant/inventory/StockLog.vue'),
   '/shop': () => import('../views/tenant/assets/Shop.vue'),
   '/shop-string': () => import('../views/tenant/assets/ShopStrings.vue'),
   '/finance': () => import('../views/tenant/Finance.vue'),
@@ -79,10 +81,12 @@ const componentMap: Record<string, () => Promise<any>> = {
 const titleMap: Record<string, string> = {
   '/dashboard': '工作台',
   '/performance': '穿线师绩效',
+  '/commission': '提成规则',
   '/order': '订单管理',
   '/order/create': '新建订单',
   '/kanban': '看板',
   '/stock': '库存管理',
+  '/stock-log': '库存流水',
   '/shop': '门店管理',
   '/shop-string': '门店穿线',
   '/tournament': '赛事订单',
