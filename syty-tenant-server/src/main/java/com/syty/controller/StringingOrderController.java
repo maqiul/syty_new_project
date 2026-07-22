@@ -1,5 +1,6 @@
 package com.syty.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.BizException;
@@ -61,6 +62,7 @@ public class StringingOrderController {
         return s == null ? "未知" : s.getBrand() + " " + s.getModel();
     }
 
+    @SaCheckPermission("order:create")
     @Operation(summary = "扫码创建订单")
     @Transactional(rollbackFor = Exception.class)
     @PostMapping("/scan")
@@ -104,6 +106,7 @@ public class StringingOrderController {
         return Result.success(order);
     }
 
+    @SaCheckPermission("order:create")
     @Operation(summary = "常规创建订单")
     @Transactional(rollbackFor = Exception.class)
     @PostMapping
@@ -319,6 +322,7 @@ public class StringingOrderController {
         return Result.success(o);
     }
 
+    @SaCheckPermission("order:edit")
     @Operation(summary = "编辑订单")
     @PutMapping
     public Result<Void> update(@RequestBody StringingOrder order) {
@@ -327,6 +331,7 @@ public class StringingOrderController {
         return Result.success();
     }
 
+    @SaCheckPermission("order:delete")
     @Operation(summary = "删除订单")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
@@ -361,6 +366,7 @@ public class StringingOrderController {
         return Result.success();
     }
 
+    @SaCheckPermission("order:complete")
     @Operation(summary = "确认完成(结账) - 扣库存记录支付+算提成")
     @PostMapping("/{id}/complete")
     public Result<Void> complete(@PathVariable Long id,
@@ -389,6 +395,7 @@ public class StringingOrderController {
         return Result.success();
     }
 
+    @SaCheckPermission("order:print")
     @Operation(summary = "打印订单(发送到C#客户端)")
     @PostMapping("/{id}/print")
     public Result<Object> print(@PathVariable Long id) {
@@ -417,6 +424,7 @@ public class StringingOrderController {
         return Result.success();
     }
 
+    @SaCheckPermission("order:export")
     @Operation(summary = "导出Excel")
     @GetMapping("/export")
     public void export(HttpServletResponse response,

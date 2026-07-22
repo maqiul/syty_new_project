@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -18,33 +19,25 @@ public class StringInfoController {
     @Operation(summary = "分页查询球线")
     @GetMapping("/page")
     public Result<Page<StringInfo>> page(@RequestParam(defaultValue = "1") int page,
-                                          @RequestParam(defaultValue = "20") int size,
-                                          @RequestParam(required = false) String keyword,
-                                          @RequestParam(required = false) String brand,
-                                          @RequestParam(required = false) String sportType) {
+                                         @RequestParam(defaultValue = "20") int size,
+                                         @RequestParam(required = false) String keyword,
+                                         @RequestParam(required = false) String sportType) {
         LambdaQueryWrapper<StringInfo> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(sportType)) {
             wrapper.eq(StringInfo::getSportType, sportType);
         }
         if (StringUtils.hasText(keyword)) {
-            wrapper.and(w -> w.like(StringInfo::getModel, keyword).or().like(StringInfo::getBrand, keyword));
-        }
-        if (StringUtils.hasText(brand)) {
-            wrapper.eq(StringInfo::getBrand, brand);
+            wrapper.and(w -> w.like(StringInfo::getBrand, keyword).or().like(StringInfo::getModel, keyword));
         }
         wrapper.orderByDesc(StringInfo::getId);
         return Result.success(stringInfoService.page(new Page<>(page, size), wrapper));
     }
     @Operation(summary = "球线列表(下拉)")
     @GetMapping("/list")
-    public Result<Object> list(@RequestParam(required = false) String brand,
-                               @RequestParam(required = false) String sportType) {
+    public Result<Object> list(@RequestParam(required = false) String sportType) {
         LambdaQueryWrapper<StringInfo> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(sportType)) {
             wrapper.eq(StringInfo::getSportType, sportType);
-        }
-        if (StringUtils.hasText(brand)) {
-            wrapper.eq(StringInfo::getBrand, brand);
         }
         return Result.success(stringInfoService.list(wrapper));
     }
@@ -53,18 +46,21 @@ public class StringInfoController {
     public Result<StringInfo> get(@PathVariable Long id) {
         return Result.success(stringInfoService.getById(id));
     }
+    @SaCheckPermission("string:create")
     @Operation(summary = "新增球线")
     @PostMapping
     public Result<StringInfo> add(@RequestBody StringInfo stringInfo) {
         stringInfoService.save(stringInfo);
         return Result.success(stringInfo);
     }
+    @SaCheckPermission("string:edit")
     @Operation(summary = "修改球线")
     @PutMapping
     public Result<Void> update(@RequestBody StringInfo stringInfo) {
         stringInfoService.updateById(stringInfo);
         return Result.success();
     }
+    @SaCheckPermission("string:delete")
     @Operation(summary = "删除球线")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {

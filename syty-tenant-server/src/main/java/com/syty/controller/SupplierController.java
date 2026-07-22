@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -52,6 +53,7 @@ public class SupplierController {
         return Result.success(supplierService.getById(id));
     }
 
+    @SaCheckPermission("supplier:create")
     @Operation(summary = "新增供应商")
     @PostMapping
     public Result<Supplier> add(@RequestBody Supplier supplier) {
@@ -59,6 +61,7 @@ public class SupplierController {
         return Result.success(supplier);
     }
 
+    @SaCheckPermission("supplier:edit")
     @Operation(summary = "修改供应商")
     @PutMapping
     public Result<Void> update(@RequestBody Supplier supplier) {
@@ -66,6 +69,7 @@ public class SupplierController {
         return Result.success();
     }
 
+    @SaCheckPermission("supplier:delete")
     @Operation(summary = "删除供应商")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {

@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -125,6 +126,7 @@ public class FinanceController {
         return Result.success(result);
     }
 
+    @SaCheckPermission("finance:repay")
     @Operation(summary = "客户还款")
     @PostMapping("/repay")
     public Result<Void> repay(@RequestBody Map<String, Object> body) {

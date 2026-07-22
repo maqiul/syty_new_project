@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.syty.common.Result;
 import com.syty.entity.CommissionRule;
@@ -24,6 +25,7 @@ public class CommissionRuleController {
         return Result.success(commissionRuleMapper.selectList(wrapper));
     }
 
+    @SaCheckPermission("commission:create")
     @Operation(summary = "新增提成规则")
     @PostMapping
     public Result<CommissionRule> add(@RequestBody CommissionRule rule) {
@@ -31,6 +33,7 @@ public class CommissionRuleController {
         return Result.success(rule);
     }
 
+    @SaCheckPermission("commission:edit")
     @Operation(summary = "修改提成规则")
     @PutMapping
     public Result<Void> update(@RequestBody CommissionRule rule) {
@@ -38,6 +41,7 @@ public class CommissionRuleController {
         return Result.success();
     }
 
+    @SaCheckPermission("commission:delete")
     @Operation(summary = "删除提成规则")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {

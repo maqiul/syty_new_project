@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -53,18 +54,21 @@ public class PlayerController {
     public Result<Player> get(@PathVariable Long id) {
         return Result.success(playerService.getById(id));
     }
+    @SaCheckPermission("player:create")
     @Operation(summary = "新增球员")
     @PostMapping
     public Result<Player> add(@RequestBody Player player) {
         playerService.save(player);
         return Result.success(player);
     }
+    @SaCheckPermission("player:edit")
     @Operation(summary = "修改球员")
     @PutMapping
     public Result<Void> update(@RequestBody Player player) {
         playerService.updateById(player);
         return Result.success();
     }
+    @SaCheckPermission("player:delete")
     @Operation(summary = "删除球员")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {

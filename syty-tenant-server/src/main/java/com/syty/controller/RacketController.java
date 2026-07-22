@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -45,18 +46,21 @@ public class RacketController {
     public Result<Racket> get(@PathVariable Long id) {
         return Result.success(racketService.getById(id));
     }
+    @SaCheckPermission("racket:create")
     @Operation(summary = "新增球拍")
     @PostMapping
     public Result<Racket> add(@RequestBody Racket racket) {
         racketService.save(racket);
         return Result.success(racket);
     }
+    @SaCheckPermission("racket:edit")
     @Operation(summary = "修改球拍")
     @PutMapping
     public Result<Void> update(@RequestBody Racket racket) {
         racketService.updateById(racket);
         return Result.success();
     }
+    @SaCheckPermission("racket:delete")
     @Operation(summary = "删除球拍")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
