@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -48,6 +49,7 @@ public class PrintTemplateController {
         if (tenantId == null) return Result.error("无租户信");
         return Result.success(printTemplateService.getDefaultTemplate(tenantId));
     }
+    @SaCheckPermission("print:template:create")
     @PostMapping
     public Result<Void> add(@RequestBody PrintTemplate template) {
         if (template.getIsDefault() == 1) {
@@ -59,6 +61,7 @@ public class PrintTemplateController {
         printTemplateService.save(template);
         return Result.success();
     }
+    @SaCheckPermission("print:template:edit")
     @PutMapping
     public Result<Void> update(@RequestBody PrintTemplate template) {
         if (template.getIsDefault() == 1) {
@@ -70,6 +73,7 @@ public class PrintTemplateController {
         printTemplateService.updateById(template);
         return Result.success();
     }
+    @SaCheckPermission("print:template:delete")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         printTemplateService.removeById(id);

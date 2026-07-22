@@ -1,5 +1,6 @@
 package com.syty.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.syty.common.Result;
 import com.syty.dto.PerformanceStatsDTO;
 import com.syty.dto.StringerRankDTO;
@@ -32,6 +33,7 @@ public class PerformanceController {
     }
 
     // 管理端全局统计
+    @SaCheckPermission("performance:admin")
     @GetMapping("/api/v1/admin/performance/stats")
     public Result<PerformanceStatsDTO> getGlobalStats(@RequestParam(required = false) Long tenantIdFilter,
                                                        @RequestParam(defaultValue = "month") String period) {

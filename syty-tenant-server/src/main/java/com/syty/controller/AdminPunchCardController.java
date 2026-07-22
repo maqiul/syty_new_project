@@ -1,5 +1,6 @@
 package com.syty.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.syty.common.Result;
 import com.syty.common.TenantContext;
 import com.syty.dto.PunchCardIssueRequest;
@@ -23,6 +24,7 @@ public class AdminPunchCardController {
     /**
      * 售卡 (发卡)
      */
+    @SaCheckPermission("punch-card:issue")
     @PostMapping("/issue")
     public Result<Void> issueCard(@Valid @RequestBody PunchCardIssueRequest request) {
         // Ensure tenant ID is set from context
