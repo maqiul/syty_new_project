@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.BizException;
@@ -52,6 +53,7 @@ public class PrintRuleController {
         return Result.success(printRuleService.list(qw));
     }
     /** 新增或修改*/
+    @SaCheckPermission("print:rule:edit")
     @PostMapping
     public Result<Void> save(@RequestBody PrintRule rule,
                              @RequestParam(required = false) Long shopId) {
@@ -62,6 +64,7 @@ public class PrintRuleController {
         return Result.success();
     }
     /** 删除 */
+    @SaCheckPermission("print:rule:delete")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         printRuleService.removeById(id);

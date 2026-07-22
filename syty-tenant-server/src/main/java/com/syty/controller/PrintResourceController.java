@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.BizException;
@@ -43,6 +44,7 @@ public class PrintResourceController {
     /**
      * 保存或更新资源
      */
+    @SaCheckPermission("print:resource:edit")
     @PostMapping
     public Result<Void> save(@RequestBody PrintResource resource) {
         Long shopId = TenantContext.getTenantId();
@@ -60,6 +62,7 @@ public class PrintResourceController {
     /**
      * 删除资源
      */
+    @SaCheckPermission("print:resource:delete")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         printResourceService.removeById(id);
