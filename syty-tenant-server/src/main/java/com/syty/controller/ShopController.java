@@ -1,5 +1,6 @@
 package com.syty.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -84,6 +85,7 @@ public class ShopController {
         return Result.success(shopService.getById(id));
     }
 
+    @SaCheckPermission("shop:create")
     @Operation(summary = "新增店铺")
     @PostMapping
     public Result<Shop> add(@RequestBody Shop shop) {
@@ -103,18 +105,22 @@ public class ShopController {
         return Result.success(shop);
     }
 
+    @SaCheckPermission("shop:edit")
     @Operation(summary = "更新店铺")
     @PutMapping
     public Result<Boolean> update(@RequestBody Shop shop) {
         return Result.success(shopService.updateById(shop));
     }
 
+    @SaCheckPermission("shop:delete")
     @Operation(summary = "删除店铺")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(shopService.removeById(id));
     }
 
+    @SaCheckPermission("shop:edit")
+    @SaCheckPermission("shop:edit")
     @Operation(summary = "设置店铺穿线师")
     @PutMapping("/{shopId}/stringers")
     public Result<Boolean> setStringers(@PathVariable Long shopId, @RequestBody List<Long> stringerIds) {

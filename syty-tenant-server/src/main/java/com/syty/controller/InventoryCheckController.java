@@ -1,5 +1,6 @@
 package com.syty.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -19,6 +20,7 @@ public class InventoryCheckController {
 
     private final InventoryCheckService checkService;
 
+    @SaCheckPermission("stock:check")
     @PostMapping
     public Result<InventoryCheck> createCheck(@RequestParam(required = false) Long shopId) {
         Long tenantId = TenantContext.getTenantId() != null ? Long.valueOf(TenantContext.getTenantId()) : 1L;
@@ -37,12 +39,14 @@ public class InventoryCheckController {
         return Result.success(checkService.getCheckItems(id));
     }
 
+    @SaCheckPermission("stock:check")
     @PutMapping("/{id}/items")
     public Result<Void> submitItems(@PathVariable Long id, @RequestBody List<InventoryCheckItem> items) {
         checkService.submitItems(id, items);
         return Result.success(null);
     }
 
+    @SaCheckPermission("stock:check")
     @PostMapping("/{id}/confirm")
     public Result<Void> confirmCheck(@PathVariable Long id) {
         checkService.confirmCheck(id);
