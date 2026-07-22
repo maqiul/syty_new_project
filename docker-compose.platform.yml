@@ -1,0 +1,147 @@
+version: '3.8'
+
+# 平台端部署（包含平台端 + 租户端）
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: syty-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: syty
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-6678722mm}
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+    networks:
+      - syty-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d syty"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: syty-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - syty-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MQTT Broker (Mosquitto)
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: syty-mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./docker-config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mqtt_data:/mosquitto/data
+      - mqtt_log:/mosquitto/log
+    networks:
+      - syty-network
+
+  # 平台端后端
+  syty-platform-server:
+    build:
+      context: ./syty-platform-server
+      dockerfile: Dockerfile
+    container_name: syty-platform-server
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:postgresql://postgres:5432/syty
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-6678722mm}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - syty-network
+
+  # 租户端后端
+  syty-tenant-server:
+    build:
+      context: ./syty-tenant-server
+      dockerfile: Dockerfile
+    container_name: syty-tenant-server
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:postgresql://postgres:5432/syty
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-6678722mm}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MQTT_BROKER: tcp://mqtt:1883
+      TZ: Asia/Shanghai
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - syty-network
+
+  # 平台端前端
+  syty-web:
+    build:
+      context: ./syty-web
+      dockerfile: Dockerfile
+    container_name: syty-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - syty-platform-server
+    networks:
+      - syty-network
+
+  # 租户端前端
+  syty-tenant:
+    build:
+      context: ./syty-tenant
+      dockerfile: Dockerfile
+    container_name: syty-tenant
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      - syty-tenant-server
+    networks:
+      - syty-network
+
+networks:
+  syty-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  mqtt_data:
+  mqtt_log:
