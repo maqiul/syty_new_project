@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -28,6 +29,7 @@ public class TennisTournamentOrderController {
         w.orderByDesc(TennisTournamentOrder::getId);
         return Result.success(service.page(new Page<>(page, size), w));
     }
+    @SaCheckPermission("tennis:tournament:create")
     @Operation(summary = "新增")
     @PostMapping
     public Result<TennisTournamentOrder> add(@RequestBody TennisTournamentOrder order) {
@@ -37,12 +39,14 @@ public class TennisTournamentOrderController {
         service.save(order);
         return Result.success(order);
     }
+    @SaCheckPermission("tennis:tournament:edit")
     @Operation(summary = "修改")
     @PutMapping
     public Result<Void> update(@RequestBody TennisTournamentOrder order) {
         service.updateById(order);
         return Result.success();
     }
+    @SaCheckPermission("tennis:tournament:delete")
     @Operation(summary = "删除")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {

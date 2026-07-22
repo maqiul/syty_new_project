@@ -1,4 +1,5 @@
 package com.syty.controller;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class OperateLogController {
     private final OperateLogMapper operateLogMapper;
+    @SaCheckPermission("log:view")
     @Operation(summary = "分页查询操作日志")
     @GetMapping("/page")
     public Result<Page<OperateLog>> page(@RequestParam(defaultValue = "1") int page,

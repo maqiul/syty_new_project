@@ -1,5 +1,6 @@
 package com.syty.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -51,6 +52,7 @@ public class TennisOrderController {
         return Result.success(orderService.page(new Page<>(page, size), w));
     }
 
+    @SaCheckPermission("order:create")
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
     @Operation(summary = "创建订单")

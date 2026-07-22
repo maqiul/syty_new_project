@@ -1,5 +1,6 @@
 package com.syty.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -25,6 +26,7 @@ public class StockLogController {
 
     private final StockLogService stockLogService;
 
+    @SaCheckPermission("stock:view")
     @Operation(summary = "分页查询库存流水")
     @GetMapping("/page")
     public Result<Page<StockLog>> page(@RequestParam(defaultValue = "1") int page,

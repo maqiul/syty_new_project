@@ -1,5 +1,6 @@
 package com.syty.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.syty.common.Result;
@@ -54,6 +55,7 @@ public class TennisPlayerController {
         return Result.success(playerService.getById(id));
     }
 
+    @SaCheckPermission("player:create")
     @PostMapping
     public Result<Player> add(@RequestBody Player p) {
         p.setSportType("TENNIS");
@@ -61,12 +63,14 @@ public class TennisPlayerController {
         return Result.success(p);
     }
 
+    @SaCheckPermission("player:edit")
     @PutMapping
     public Result<Void> update(@RequestBody Player p) {
         playerService.updateById(p);
         return Result.success();
     }
 
+    @SaCheckPermission("player:delete")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         playerService.removeById(id);

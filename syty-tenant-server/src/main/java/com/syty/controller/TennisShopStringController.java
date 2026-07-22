@@ -1,5 +1,6 @@
 package com.syty.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.syty.common.Result;
 import com.syty.common.TenantContext;
@@ -37,6 +38,7 @@ public class TennisShopStringController {
                 .list());
     }
 
+    @SaCheckPermission("shop:string:create")
     @PostMapping
     @Operation(summary = "添加")
     public Result<Void> add(@RequestBody ShopString s) {
@@ -45,6 +47,7 @@ public class TennisShopStringController {
         return Result.success();
     }
 
+    @SaCheckPermission("shop:string:edit")
     @PutMapping
     @Operation(summary = "修改")
     public Result<Void> update(@RequestBody ShopString s) {
@@ -52,6 +55,7 @@ public class TennisShopStringController {
         return Result.success();
     }
 
+    @SaCheckPermission("shop:string:delete")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         shopStringService.removeById(id);
