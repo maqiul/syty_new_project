@@ -30,7 +30,8 @@ public class DbAutoInitRunner implements CommandLineRunner {
             "sql/V1.8_customer_separation.sql",
             "sql/tenant/V1.9_tenant_template.sql",
             "sql/tenant/V2.0_supplier.sql",
-            "sql/V2.1_permissions.sql"
+            "sql/V2.1_permissions.sql",
+            "sql/V2.2_operation_log.sql"
     };
 
     private final DataSource dataSource;
