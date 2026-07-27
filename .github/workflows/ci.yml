@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  # ============================================
+  # 后端编译检查 - 平台端
+  # ============================================
+  backend-platform:
+    name: Backend - Platform Server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: syty-platform-server
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      
+      - name: Compile backend
+        run: mvn compile -DskipTests -q
+      
+      - name: Check for compilation warnings
+        run: mvn compile -DskipTests 2>&1 | grep -i "warning" || echo "No warnings found"
+        continue-on-error: true
+
+  # ============================================
+  # 后端编译检查 - 租户端
+  # ============================================
+  backend-tenant:
+    name: Backend - Tenant Server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: syty-tenant-server
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      
+      - name: Compile backend
+        run: mvn compile -DskipTests -q
+      
+      - name: Check for compilation warnings
+        run: mvn compile -DskipTests 2>&1 | grep -i "warning" || echo "No warnings found"
+        continue-on-error: true
+
+  # ============================================
+  # 前端构建检查 - 平台端
+  # ============================================
+  frontend-platform:
+    name: Frontend - Platform Web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: syty-web
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: syty-web/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build frontend
+        run: npm run build
+      
+      - name: Check build output
+        run: |
+          if [ -d "dist" ]; then
+            echo "✅ Build successful - dist directory exists"
+            ls -lh dist/
+          else
+            echo "❌ Build failed - dist directory not found"
+            exit 1
+          fi
+
+  # ============================================
+  # 前端构建检查 - 租户端
+  # ============================================
+  frontend-tenant:
+    name: Frontend - Tenant Web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: syty-tenant
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: syty-tenant/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build frontend
+        run: npm run build
+      
+      - name: Check build output
+        run: |
+          if [ -d "dist" ]; then
+            echo "✅ Build successful - dist directory exists"
+            ls -lh dist/
+          else
+            echo "❌ Build failed - dist directory not found"
+            exit 1
+          fi
+
+  # ============================================
+  # 汇总状态
+  # ============================================
+  ci-success:
+    name: CI Success
+    needs: [backend-platform, backend-tenant, frontend-platform, frontend-tenant]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "Backend Platform: ${{ needs.backend-platform.result }}"
+          echo "Backend Tenant: ${{ needs.backend-tenant.result }}"
+          echo "Frontend Platform: ${{ needs.frontend-platform.result }}"
+          echo "Frontend Tenant: ${{ needs.frontend-tenant.result }}"
+          
+          if [[ "${{ needs.backend-platform.result }}" != "success" ]] || \
+             [[ "${{ needs.backend-tenant.result }}" != "success" ]] || \
+             [[ "${{ needs.frontend-platform.result }}" != "success" ]] || \
+             [[ "${{ needs.frontend-tenant.result }}" != "success" ]]; then
+            echo "❌ CI failed"
+            exit 1
+          fi
+          
+          echo "✅ All CI checks passed!"
