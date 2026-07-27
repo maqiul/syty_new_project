@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 
@@ -41,6 +43,7 @@ class StringingOrderServiceTest {
     @Mock
     private PunchCardService punchCardService;
 
+    @Spy
     @InjectMocks
     private StringingOrderServiceImpl orderService;
 
@@ -48,6 +51,9 @@ class StringingOrderServiceTest {
 
     @BeforeEach
     void setUp() {
+        // 将 mock mapper 注入到 ServiceImpl 的 baseMapper 字段
+        ReflectionTestUtils.setField(orderService, "baseMapper", orderMapper);
+
         testOrder = new StringingOrder();
         testOrder.setId(1L);
         testOrder.setOrderNo("SO20260727001");
@@ -63,8 +69,8 @@ class StringingOrderServiceTest {
     @DisplayName("完成订单 - 正常流程（扣库存+记录支付+计算提成）")
     void completeOrder_Success() {
         // Given
-        when(orderMapper.selectById(1L)).thenReturn(testOrder);
-        when(orderMapper.updateById(any())).thenReturn(1);
+        doReturn(testOrder).when(orderService).getById(1L);
+        doReturn(true).when(orderService).updateById(any());
 
         // When
         orderService.completeOrder(1L, new BigDecimal("100.00"), "WECHAT");
@@ -73,9 +79,9 @@ class StringingOrderServiceTest {
         verify(stockService, times(2)).deductStock(eq(1L), anyLong(), eq(1), eq(1L), eq("SO20260727001"));
         verify(paymentService).recordPayment(1L, new BigDecimal("100.00"), "WECHAT");
         verify(commissionService).calculateCommission(1L);
-        
+
         // 验证订单状态更新为已完成（status=2）
-        verify(orderMapper).updateById(argThat(order -> 
+        verify(orderService).updateById(argThat(order ->
             order.getId().equals(1L) && order.getStatus() == 2
         ));
     }
@@ -84,7 +90,7 @@ class StringingOrderServiceTest {
     @DisplayName("完成订单 - 订单不存在抛出异常")
     void completeOrder_OrderNotFound_ThrowsException() {
         // Given
-        when(orderMapper.selectById(999L)).thenReturn(null);
+        doReturn(null).when(orderService).getById(999L);
 
         // When & Then
         BizException exception = assertThrows(BizException.class, () -> {
@@ -98,7 +104,7 @@ class StringingOrderServiceTest {
     void completeOrder_InvalidStatus_ThrowsException() {
         // Given
         testOrder.setStatus(2); // 已完成
-        when(orderMapper.selectById(1L)).thenReturn(testOrder);
+        doReturn(testOrder).when(orderService).getById(1L);
 
         // When & Then
         BizException exception = assertThrows(BizException.class, () -> {
@@ -112,8 +118,8 @@ class StringingOrderServiceTest {
     void completeOrder_NoMainString_SkipDeduct() {
         // Given
         testOrder.setMainStringId(null);
-        when(orderMapper.selectById(1L)).thenReturn(testOrder);
-        when(orderMapper.updateById(any())).thenReturn(1);
+        doReturn(testOrder).when(orderService).getById(1L);
+        doReturn(true).when(orderService).updateById(any());
 
         // When
         orderService.completeOrder(1L, null, null);
@@ -128,8 +134,8 @@ class StringingOrderServiceTest {
     void completeOrder_NoCrossString_SkipDeduct() {
         // Given
         testOrder.setCrossStringId(null);
-        when(orderMapper.selectById(1L)).thenReturn(testOrder);
-        when(orderMapper.updateById(any())).thenReturn(1);
+        doReturn(testOrder).when(orderService).getById(1L);
+        doReturn(true).when(orderService).updateById(any());
 
         // When
         orderService.completeOrder(1L, null, null);
@@ -143,8 +149,8 @@ class StringingOrderServiceTest {
     @DisplayName("完成订单 - 无支付信息时不记录支付")
     void completeOrder_NoPayment_SkipRecord() {
         // Given
-        when(orderMapper.selectById(1L)).thenReturn(testOrder);
-        when(orderMapper.updateById(any())).thenReturn(1);
+        doReturn(testOrder).when(orderService).getById(1L);
+        doReturn(true).when(orderService).updateById(any());
 
         // When
         orderService.completeOrder(1L, null, null);
@@ -160,8 +166,8 @@ class StringingOrderServiceTest {
         testOrder.setUsePunchCard(true);
         testOrder.setPunchCardId(100L);
         testOrder.setCustomerId(50L);
-        when(orderMapper.selectById(1L)).thenReturn(testOrder);
-        when(orderMapper.updateById(any())).thenReturn(1);
+        doReturn(testOrder).when(orderService).getById(1L);
+        doReturn(true).when(orderService).updateById(any());
 
         // When
         orderService.completeOrder(1L, BigDecimal.ZERO, "PUNCH_CARD");
@@ -177,14 +183,14 @@ class StringingOrderServiceTest {
         testOrder.setUsePunchCard(true);
         testOrder.setPunchCardId(100L);
         testOrder.setCustomerId(50L);
-        when(orderMapper.selectById(1L)).thenReturn(testOrder);
-        when(orderMapper.updateById(any())).thenReturn(1);
+        doReturn(testOrder).when(orderService).getById(1L);
+        doReturn(true).when(orderService).updateById(any());
         doThrow(new BizException("次卡余额不足")).when(punchCardService).deduct(anyLong(), anyLong(), anyLong(), anyLong());
 
         // When - 不应该抛出异常
         assertDoesNotThrow(() -> orderService.completeOrder(1L, BigDecimal.ZERO, "PUNCH_CARD"));
 
         // Then - 订单仍然完成
-        verify(orderMapper).updateById(argThat(order -> order.getStatus() == 2));
+        verify(orderService).updateById(argThat(order -> order.getStatus() == 2));
     }
 }
