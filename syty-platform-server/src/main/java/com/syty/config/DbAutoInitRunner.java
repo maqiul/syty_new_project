@@ -3,20 +3,36 @@ package com.syty.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.Statement;
 
 /**
  * 数据库自动初始化脚本
- * V1.9 临时使用：确保 package_info 表存在并插入默认数据
+ * <p>
+ * 启动时自动执行所有 V*.sql 脚本（建表 + 种子数据 + 权限码），
+ * 使用 ON CONFLICT DO NOTHING / IF NOT EXISTS 保证幂等，
+ * 无需手动执行 SQL。
  */
 @Component
 public class DbAutoInitRunner implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DbAutoInitRunner.class);
+
+    /** 需要自动执行的 SQL 脚本（classpath:sql/ 下的相对路径） */
+    private static final String[] AUTO_INIT_SCRIPTS = {
+            "sql/V1.4_add_batch_id.sql",
+            "sql/V1.5_create_punch_card.sql",
+            "sql/V1.8_customer_separation.sql",
+            "sql/tenant/V1.9_tenant_template.sql",
+            "sql/tenant/V2.0_supplier.sql",
+            "sql/V2.1_permissions.sql"
+    };
+
     private final DataSource dataSource;
 
     public DbAutoInitRunner(DataSource dataSource) {
@@ -26,39 +42,26 @@ public class DbAutoInitRunner implements CommandLineRunner {
     @Override
     public void run(String... args) {
         log.info(">>> 开始执行数据库自动初始化 (DbAutoInitRunner)...");
+        int successCount = 0;
+        int failCount = 0;
         
-        String createTableSql = 
-            "CREATE TABLE IF NOT EXISTS public.package_info (" +
-            "    id BIGSERIAL PRIMARY KEY, " +
-            "    name VARCHAR(100) NOT NULL, " +
-            "    price DECIMAL(10, 2) DEFAULT 0.00, " +
-            "    max_tenants INT DEFAULT 0, " +
-            "    duration_days INT DEFAULT 365, " +
-            "    features TEXT, " +
-            "    status INT DEFAULT 1, " +
-            "    deleted INT DEFAULT 0, " +
-            "    created_at TIMESTAMP DEFAULT NOW(), " +
-            "    updated_at TIMESTAMP DEFAULT NOW()" +
-            ")";
-
-        String insertSeedSql = 
-            "INSERT INTO public.package_info (id, name, price, duration_days, status) " +
-            "VALUES (1, '基础版', 99.00, 365, 1) " +
-            "ON CONFLICT (id) DO NOTHING";
-
-        try (Connection conn = dataSource.getConnection();
-             Statement stmt = conn.createStatement()) {
-            
-            // 1. 建表
-            stmt.execute(createTableSql);
-            log.info("✅ 表 package_info 检查完毕 (已存在或已创建)");
-
-            // 2. 插入种子数据
-            stmt.execute(insertSeedSql);
-            log.info("✅ 种子数据插入完毕");
-
-        } catch (Exception e) {
-            log.error("❌ 数据库自动初始化失败: {}", e.getMessage());
+        for (String scriptPath : AUTO_INIT_SCRIPTS) {
+            try {
+                Resource resource = new ClassPathResource(scriptPath);
+                if (!resource.exists()) {
+                    log.warn("⚠️ 脚本不存在, 跳过: {}", scriptPath);
+                    continue;
+                }
+                try (Connection conn = dataSource.getConnection()) {
+                    ScriptUtils.executeSqlScript(conn, resource);
+                }
+                log.info("✅ 已执行脚本: {}", scriptPath);
+                successCount++;
+            } catch (Exception e) {
+                log.error("❌ 执行脚本失败: {} - {}", scriptPath, e.getMessage());
+                failCount++;
+            }
         }
+        log.info(">>> 数据库自动初始化完成: 成功 {} 个, 失败 {} 个 <<<", successCount, failCount);
     }
 }

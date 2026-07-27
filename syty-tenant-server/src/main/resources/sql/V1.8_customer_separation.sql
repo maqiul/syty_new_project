@@ -22,29 +22,25 @@ CREATE TABLE IF NOT EXISTS "customer" (
 );
 
 -- 2. 改造穿线工单：增加 customer_id，保留 player_id 做关联
--- 注意：如果字段已存在会报错，请手动检查
 ALTER TABLE "stringing_order" 
     ADD COLUMN IF NOT EXISTS "customer_id" BIGINT;
 
--- 3. 次卡表重构 (删除旧表重建，确保外键正确指向 customer)
--- 警告：此操作会清空次卡测试数据
-DROP TABLE IF EXISTS "punch_card_log" CASCADE;
-DROP TABLE IF EXISTS "punch_card" CASCADE;
-
-CREATE TABLE "punch_card" (
+-- 3. 次卡表重构 (绑定 Customer)
+-- 注意：只在表不存在时创建，避免删除已有数据
+CREATE TABLE IF NOT EXISTS "punch_card" (
     "id"                BIGSERIAL        NOT NULL PRIMARY KEY,
-    "customer_id"       BIGINT           NOT NULL,  -- 修正：绑定 Customer
+    "customer_id"       BIGINT           NOT NULL,
     "tenant_id"         BIGINT           NOT NULL,
     "card_type"         VARCHAR(32)      NOT NULL,
     "total_count"       INT              DEFAULT 0,
     "remaining_count"   INT              DEFAULT 0,
-    "status"            SMALLINT         DEFAULT 1, -- 1:正常 2:用完 3:过期
-    "version"           INT              DEFAULT 0, -- 乐观锁
+    "status"            SMALLINT         DEFAULT 1,
+    "version"           INT              DEFAULT 0,
     "expire_time"       TIMESTAMP,
     "created_at"        TIMESTAMP        DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE "punch_card_log" (
+CREATE TABLE IF NOT EXISTS "punch_card_log" (
     "id"                BIGSERIAL        NOT NULL PRIMARY KEY,
     "customer_id"       BIGINT           NOT NULL,
     "card_id"           BIGINT           NOT NULL,

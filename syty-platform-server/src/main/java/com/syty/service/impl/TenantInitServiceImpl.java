@@ -59,8 +59,11 @@ public class TenantInitServiceImpl implements TenantInitService {
     // 常量
     // ========================================================================
 
-    /** DDL 模板路径 (classpath 相对路径) */
-    private static final String DDL_TEMPLATE_PATH = "sql/tenant/V1.9_tenant_template.sql";
+    /** DDL 模板路径列表 (classpath 相对路径), 按顺序执行 */
+    private static final String[] DDL_TEMPLATE_PATHS = {
+            "sql/tenant/V1.9_tenant_template.sql",
+            "sql/tenant/V2.0_supplier.sql"
+    };
 
     /** 默认管理员密码 (明文) — 生产环境应由调用方传入强密码 */
     private static final String DEFAULT_ADMIN_PASSWORD = "Admin@123";
@@ -121,7 +124,8 @@ public class TenantInitServiceImpl implements TenantInitService {
             schemaCreated = true;
 
             // === 步骤 2: 执行 DDL 模板 (在租户 Schema 下建表) ===
-            log.info("  [2/4] 执行 DDL 模板: {}", DDL_TEMPLATE_PATH);
+            log.info("  [2/4] 执行 DDL 模板: {} (共 {} 个文件)",
+                    String.join(", ", DDL_TEMPLATE_PATHS), DDL_TEMPLATE_PATHS.length);
             executeDdlTemplateInSchema(schemaName);
 
             // === 步骤 3: 插入种子数据 ===
@@ -247,24 +251,13 @@ public class TenantInitServiceImpl implements TenantInitService {
     }
 
     /**
-     * 在指定 Schema 下执行 DDL 模板
+     * 在指定 Schema 下执行 DDL 模板 (按 DDL_TEMPLATE_PATHS 顺序执行所有模板)
      * <p>
-     * 流程: 读取 SQL 文件 → 按分号拆分为语句 → 过滤 public.* 语句 →
+     * 流程: 逐个读取 SQL 文件 → 按分号拆分为语句 → 过滤 public.* 语句 →
      * 通过 SET search_path 切换 → ScriptRunner 逐条执行
      * </p>
      */
     private void executeDdlTemplateInSchema(String schemaName) throws IOException, SQLException {
-        // 1. 读取 DDL 模板
-        String rawDdl = readDdlTemplate();
-        if (rawDdl == null || rawDdl.trim().isEmpty()) {
-            throw new IllegalStateException("DDL 模板为空: " + DDL_TEMPLATE_PATH);
-        }
-
-        // 2. 过滤并拆分语句
-        java.util.List<String> statements = filterAndSplitStatements(rawDdl);
-        log.info("  DDL 模板共 {} 条语句 (已过滤 public.* 语句)", statements.size());
-
-        // 3. 在租户 Schema 下执行
         try (Connection conn = dataSource.getConnection()) {
             ScriptRunner runner = new ScriptRunner(conn)
                     .setStopOnError(true)
@@ -273,9 +266,20 @@ public class TenantInitServiceImpl implements TenantInitService {
             // 切换 search_path 到租户 Schema
             runner.execute("SET search_path TO \"" + schemaName + "\"");
 
-            // 逐条执行 DDL
-            for (String stmt : statements) {
-                runner.execute(stmt);
+            // 逐个模板文件执行
+            for (String templatePath : DDL_TEMPLATE_PATHS) {
+                String rawDdl = readDdlTemplate(templatePath);
+                if (rawDdl == null || rawDdl.trim().isEmpty()) {
+                    log.warn("  DDL 模板为空, 跳过: {}", templatePath);
+                    continue;
+                }
+
+                java.util.List<String> statements = filterAndSplitStatements(rawDdl);
+                log.info("  [{}] DDL 共 {} 条语句", templatePath, statements.size());
+
+                for (String stmt : statements) {
+                    runner.execute(stmt);
+                }
             }
         }
 
@@ -289,10 +293,10 @@ public class TenantInitServiceImpl implements TenantInitService {
     /**
      * 从 classpath 读取 DDL 模板
      */
-    private String readDdlTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(DDL_TEMPLATE_PATH);
+    private String readDdlTemplate(String templatePath) throws IOException {
+        ClassPathResource resource = new ClassPathResource(templatePath);
         if (!resource.exists()) {
-            throw new IllegalStateException("DDL 模板文件不存在: " + DDL_TEMPLATE_PATH);
+            throw new IllegalStateException("DDL 模板文件不存在: " + templatePath);
         }
 
         try (InputStream is = resource.getInputStream();

@@ -120,7 +120,6 @@ public class ShopController {
     }
 
     @SaCheckPermission("shop:edit")
-    @SaCheckPermission("shop:edit")
     @Operation(summary = "设置店铺穿线师")
     @PutMapping("/{shopId}/stringers")
     public Result<Boolean> setStringers(@PathVariable Long shopId, @RequestBody List<Long> stringerIds) {
