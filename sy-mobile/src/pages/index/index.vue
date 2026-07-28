@@ -114,6 +114,15 @@
       <text class="empty-hint">请检查输入信息后重试</text>
     </view>
 
+    <!-- 底部导航 -->
+    <view class="bottom-nav">
+      <view class="nav-item" @click="goToOrders">
+        <up-icon name="order" size="22" color="#1890ff" />
+        <text>我的订单</text>
+        <up-icon name="arrow-right" size="14" color="#c0c4cc" />
+      </view>
+    </view>
+
     <!-- 底部安全区 -->
     <view class="safe-bottom" />
   </view>
@@ -180,6 +189,11 @@ const transformOrder = (order: any): QueryResult => {
     ],
     remark: order.remark || '',
   }
+}
+
+/** 跳转到我的订单 */
+const goToOrders = () => {
+  uni.navigateTo({ url: '/pages/orders/index' })
 }
 
 /** 真实 API 查询 */
@@ -481,6 +495,28 @@ const handleQuery = async () => {
     font-size: 24rpx;
     color: #909399;
     margin-top: 10rpx;
+  }
+}
+
+/* ===== 底部导航 ===== */
+.bottom-nav {
+  margin: 30rpx;
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+    background: #fff;
+    border-radius: 16rpx;
+    padding: 28rpx 30rpx;
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+
+    text {
+      flex: 1;
+      font-size: 28rpx;
+      color: #303133;
+      font-weight: 500;
+    }
   }
 }
 

@@ -13,6 +13,13 @@
         "navigationBarTitleText": "穿线进度查询",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/orders/index",
+      "style": {
+        "navigationBarTitleText": "我的订单",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {
