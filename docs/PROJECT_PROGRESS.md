@@ -1,113 +1,152 @@
-# 🚀 SYTY 穿线管理系统项目进度全景图
+# 🚀 SYTY 穿线管理系统 - 项目进度全景图
 
-> **最后更新：** 2026-05-09
-> **当前阶段：** V1.5 精细化运营 (Sprint 启动中)
-> **核心架构：** Spring Boot 3 + Vue 3/TS + PostgreSQL + C# 客户端 (MQTT)
-> **代码路径：** `I:\syty` (后端: `syty-server`, 前端: `syty-web`, 客户端: `PrintClient`)
-
----
-
-## 📊 总体进度摘要
-
-| 版本 | 状态 | 核心目标 | 交付时间 |
-| :--- | :--- | :--- | :--- |
-| **V1.0 - V1.3** | ✅ **已封版** | 基础架构重建、RBAC 权限、店铺隔离、环境配置 | 早期 |
-| **V1.4** | ✅ **开发完成，待压测** | 打印系统全链路升级、动态绑定、MQTT 回执、静默补打 | 2026-05-09 |
-| **V1.5** | 🚧 **进行中 (Day 1)** | 精细化运营：库存盘点、供应商管理、可视化设计器增强 | **当前** |
+> **最后更新：** 2026-07-27
+> **当前版本：** V2.2 项目改进完成
+> **核心架构：** Spring Boot 3 + Vue 3/TS + PostgreSQL 多租户 + uni-app 移动端
+> **代码仓库：** https://github.com/maqiul/syty_new_project
 
 ---
 
-## 📦 历史版本回顾 (V1.0 - V1.3)
+## 📊 版本总览
 
-### 🛠️ V1.0 环境重构与代码迁徙
-- **架构迁移**：MySQL 彻底切换至 **PostgreSQL** (Podman/Docker 部署)，修复连接拒绝问题。
-- **代码清洗**：物理删除 `com.example.printer` 垃圾代码，统一收口至 `com.syty`。
-- **修复**：实体字段对齐，修复 404 路由。
-
-### 🏢 V1.3 权限与店铺隔离
-- **多租户基础**：`sys_print_template` 增加 `shop_id`，实现店铺模板隔离。
-- **自动同步**：新店创建时自动克隆公共模板，老店支持一键同步。
-- **RBAC 权限**：权限系统覆盖核心业务接口。
-- **数据库**：`print_log` 表结构确立，支持补打审计。
+| 版本 | 状态 | 核心目标 | 完成时间 |
+|------|------|----------|----------|
+| V1.0 - V1.3 | ✅ 已封版 | 基础架构、RBAC、店铺隔离 | 早期 |
+| V1.4 | ✅ 已交付 | 打印系统升级、MQTT 回执 | 2026-05 |
+| V1.5 - V1.9 | ✅ 已交付 | 精细化运营、多租户基础 | 2026-06 |
+| V2.0 | ✅ 已交付 | 双后端架构 + 羽网合并 | 2026-07 |
+| V2.1 | ✅ 已交付 | 权限控制 + 供应商 + 库存台账 | 2026-07 |
+| V2.2 | ✅ 已交付 | 项目改进（CI/CD/测试/AOP/移动端） | 2026-07-27 |
 
 ---
 
-## 🔥 V1.4 核心交付清单 (打印系统升级)
+## 🔥 V2.0 双后端架构 + 羽网合并
 
-> **核心价值：** 解决“打印不可控、状态不可知、排版死板”三大痛点。
+### 架构升级
+- **双后端分离**：`syty-platform-server`（平台管理）+ `syty-tenant-server`（租户业务）
+- **双前端分离**：`syty-web`（平台端）+ `syty-tenant`（租户端）
+- **数据库多租户**：PostgreSQL Schema 级隔离（`public` + `tenant_xxx`）
 
-### 1. ✅ 动态数据绑定 (P0 - BLOCKER 修复)
-- **问题修复**：彻底解决打印机打印出 `{customer_name}` 变量名的严重 Bug。
-- **实现细节**：
-  - **前端**：设计器支持组件绑定业务字段（如 `customer_name`, `tension`）。
-  - **后端**：提供 `/api/print-template/fields` 字段字典接口。
-  - **C# 客户端**：大壮实现**文本替换引擎**，支持 `Field -> OrderData` 映射及 Fallback 兜底。
-
-### 2. ✅ MQTT ACK 回执机制 (P0 - 状态追踪)
-- **通信链路**：MQTT Topic: `syty/print/ack/{shopId}/{taskId}`。
-- **状态同步**：C# 端打印成功/失败后自动上报，后端入库 `print_log`。
-- **前端展示**：订单列表新增“打印状态”列（✅ 成功 / ❌ 失败），失败原因支持 Tooltip 显示。
-
-### 3. ✅ C# 客户端全量静默化 (体验优化)
-- **去弹窗**：**严禁**打印过程中弹出 `MessageBox`。
-- **交互升级**：新订单改为右上角 Toast 通知，打印结果仅状态栏红/绿字提示。
-- **补打逻辑**：支持 `is_reprint` 标识，后台触发静默打印，防打断操作。
-
-### 4. ✅ 图片本地化与缓存
-- **机制**：废弃云端 URL，改用 `key` 占位符（如 `shop_logo`）。
-- **C# 渲染**：优先读取 `C:\ProgramData\SYTY\Assets\{key}.{ext}`，缺失时静默留白并记录日志。
-- **优势**：实现断网打印，极速渲染。
-
-### 5. ✅ 模板同步与补打
-- **同步**：后端实现 `POST /api/print-template/sync`，前端操作列增加“同步系统模板”按钮。
-- **补打反馈**：点击补打后弹出 Toast “指令已发送”，提升用户安全感。
+### 羽网合并
+- 统一资产模型：`Player`/`Racket`/`String`/`Supplier` 同时服务羽毛球和网球
+- 10 个 Controller 完成代理层改造
+- 前端 API 层已对接，页面层零改动
 
 ---
 
-## 🚀 V1.5 精细化运营 (进行中)
+## 🏢 V2.1 权限控制 + 业务补全
 
-> **目标：** 从“接单打印”向“管钱、管货、管人”进化。
+### 权限控制
+- **28 个 Controller** 已加 `@SaCheckPermission` 注解
+- 权限码初始化 SQL：`V2.1_permissions.sql`
+- 设计原则：查询不加权限，写接口必须权限
 
-### 🏗️ 已交付/开发中
-- **[前端] 可视化设计器 MVP (小王)**：
-  - 基于纯 DOM 方案（放弃 Konva/Canvas），降低维护成本。
-  - 支持拖拽添加组件（文本/图片/条码/二维码）、自由旋转、属性面板编辑。
-  - 导出 JSON 完美兼容 V1.4 格式。
-- **[后端] 供应商管理模块 (老刘)**：
-  - `Supplier` 实体、Mapper、Service、Controller 全套 CRUD。
-  - SQL 脚本 `V18__supplier.sql` 就绪。
-- **[后端] 库存商品台账 (老刘)**：
-  - `InventoryGoods` 实体，支持商品分类、库存预警字段预留。
-  - SQL 脚本 `V19__inventory_goods.sql` 就绪。
-
-### 📋 待排期/规划中
-- **[后端] 库存变动流水**：入库、消耗、盘点差异记录（需新建流水表）。
-- **[前端] 供应商/库存页面**：对接老刘接口的列表与编辑页。
-- **[数据] 穿线师绩效统计**：基于 `stringer_work_log` 报表生成。
-- **[DBA] 数据迁移**：`supplier_name` 转 `supplier_id` 外键关联。
+### 业务功能补全
+- 供应商管理（Supplier CRUD）
+- 库存台账（Inventory 完整功能）
+- 库存流水前端页面
+- 提成规则前端页面
+- 客户欠款/还款功能
 
 ---
 
-## 👥 团队分工与当前状态
+## 🛠️ V2.2 项目改进（本次交付）
 
-| 角色 | 昵称 | 当前任务 | 状态 |
-| :--- | :--- | :--- | :--- |
-| **架构师** | **老马** | V1.4 联调验收、V1.5 调度 | 🔴 待验收 |
-| **后端** | **老刘** | V1.5 库存变动逻辑开发 | 🔥 开发中 |
-| **前端** | **小王** | V1.5 库存/供应商页面开发 | 🔥 开发中 |
-| **客户端** | **大壮** | V1.4 代码自查、V1.5-2 预研 | ☕ 待命中 |
-| **产品** | **老赵** | V1.5+ 路线图画图、体验验收 | 🟢 规划中 |
-| **DBA** | **老李** | V1.5 新表 DDL 审核与执行 | 🔵 排队中 |
+### CI/CD
+- GitHub Actions 流水线：`.github/workflows/ci.yml`
+- 4 个并行 Job：双后端编译 + 双前端构建
+- push/PR 到 main 自动触发
+
+### 数据库自动化
+- 平台端 `DbAutoInitRunner` 扩展支持多脚本
+- 租户端 `TenantDbAutoInitRunner` 遍历所有 tenant schema 执行
+- SQL 脚本全部幂等化（`IF NOT EXISTS` / `ON CONFLICT DO NOTHING`）
+
+### 单元测试
+- 32 个测试用例全部通过
+- `StockServiceTest`：库存扣减/防超卖（10 个）
+- `StringingOrderServiceTest`：订单流程（8 个）
+- `TenantInitServiceTest`：租户初始化（14 个）
+
+### 操作日志 AOP
+- `@OperationLog` 注解 + `LogAspect` 切面
+- 自动拦截 Controller 写操作，异步记录
+- `V2.2_operation_log.sql` 建表脚本
+
+### 移动端扩展
+- 新增"我的订单"页面（`pages/orders/index.vue`）
+- 按手机号查询历史订单 + 进度时间线
+- 首页添加入口导航
+
+### 构建修复
+- 修复 `syty-web` antdv-next locale 路径（`es/` → `dist/`）
+- 双前端 + 双后端 + 移动端全部构建通过
 
 ---
 
-## ⚠️ 技术债务与风险提示
-1. **订单列表模拟数据**：前端打印状态列目前使用了 Mock 数据，联调时需确认老刘 DTO 已透传 `printStatus`。
-2. **数据库连接**：PostgreSQL 使用 Podman 容器，需定期关注端口转发 (`netsh`) 状态，防断连。
-3. **C# 历史 Bug**：`StringingWorkDialog` 等模块存在少量预存编译错误（非本次修改引入），建议后续专项清理。
-4. **库存一致性**：V1.5 目前仅完成了商品台账，**库存扣减/增加逻辑**尚未实现，严禁直接手动改库。
+## 📦 项目结构
+
+```
+syty_new_project/
+├── syty-platform-server/    # 平台端后端 (Spring Boot 3)
+├── syty-tenant-server/      # 租户端后端 (Spring Boot 3)
+├── syty-web/                # 平台端前端 (Vue 3 + TS + antdv-next)
+├── syty-tenant/             # 租户端前端 (Vue 3 + TS + antdv-next)
+├── sy-mobile/               # 移动端 (uni-app + Vue 3)
+├── syty-print-client/       # C# 打印客户端
+├── docker/                  # Docker 配置
+├── docs/                    # 文档
+└── .github/workflows/       # CI/CD
+```
 
 ---
 
-> **文件路径：** `I:\syty\docs\PROJECT_PROGRESS.md`
-> **生成人：** 嘎嘎 (Agent: `default`)
+## ✅ 构建验证状态
+
+| 模块 | 命令 | 状态 |
+|------|------|------|
+| 平台端后端 | `mvn compile -DskipTests` | ✅ 通过 |
+| 租户端后端 | `mvn compile -DskipTests` | ✅ 通过 |
+| 平台端前端 | `npx vite build` | ✅ 通过 |
+| 租户端前端 | `npx vite build` | ✅ 通过 |
+| 移动端 | `npm run build:h5` | ✅ 通过 |
+| 单元测试 | `mvn test` | ✅ 32/32 通过 |
+
+---
+
+## 🐳 Docker 部署
+
+已配置但未实际验证：
+- `docker-compose.yml`（租户端）
+- `docker-compose.platform.yml`（完整平台）
+- 各模块 `Dockerfile`（多阶段构建）
+
+**待办**：执行 `docker-compose up` 验证部署流程
+
+---
+
+## ⚠️ 待办事项
+
+### 需要手动执行
+1. **数据库建表**：在 PostgreSQL 中执行
+   - `V2.0_supplier.sql`
+   - `V2.1_permissions.sql`
+   - `V2.2_operation_log.sql`
+
+2. **Docker 验证**：`docker-compose up` 跑一遍
+
+### 可选优化
+- 集成测试（SpringBootTest）
+- 文档进一步更新
+- 移动端扩展到微信小程序
+
+---
+
+## 📝 变更日志
+
+详细变更记录见 `CHANGELOG.md`
+
+---
+
+> **维护者**：老马
+> **仓库**：https://github.com/maqiul/syty_new_project
