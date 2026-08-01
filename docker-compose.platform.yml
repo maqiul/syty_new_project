@@ -1,5 +1,3 @@
-version: '3.8'
-
 # 平台端部署（包含平台端 + 租户端）
 services:
   # PostgreSQL 数据库
